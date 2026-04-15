@@ -41,6 +41,15 @@ A full-stack QR code-based restaurant management system built with React + Vite 
 - `orders` — Customer orders with status tracking
 - `order_items` — Individual items in each order
 
+## Development Setup
+
+- The Replit workflow named `Start application` runs both services:
+  - API server on port `8080`
+  - Restaurant frontend on port `18641`
+- The frontend proxies `/api/*` requests to the API server.
+- The development database is provisioned and the Drizzle schema has been pushed.
+- Starter data has been seeded for 4 menu categories, 9 menu items, and 5 restaurant tables.
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
