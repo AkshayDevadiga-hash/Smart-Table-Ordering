@@ -54,6 +54,10 @@ function renderMenu() {
   const body = document.getElementById('menuBody');
   const filteredCats = activeFilter ? categories.filter(c => c.id === activeFilter) : categories;
   body.innerHTML = '';
+  if (!categories.length) {
+    body.innerHTML = '<div class="empty-state"><h3>No Categories Yet</h3><p>Add menu categories first, then you can create items.</p></div>';
+    return;
+  }
   filteredCats.forEach(cat => {
     const items = menuItems.filter(i => i.categoryId === cat.id);
     const sec = document.createElement('div');
@@ -94,6 +98,15 @@ function renderMenu() {
 function populateCategorySelect(selectedId) {
   const sel = document.getElementById('fCategory');
   sel.innerHTML = '';
+  if (!categories.length) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'No categories available';
+    sel.appendChild(opt);
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
   categories.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat.id;
@@ -104,6 +117,11 @@ function populateCategorySelect(selectedId) {
 }
 
 function openAdd() {
+  if (!categories.length) {
+    showToast('No categories found. Please refresh and try again.', true);
+    load();
+    return;
+  }
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Add Menu Item';
   document.getElementById('submitBtn').textContent = 'Add Item';
@@ -140,6 +158,11 @@ async function submitForm(e) {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   const categoryId = parseInt(document.getElementById('fCategory').value, 10);
+  if (!Number.isInteger(categoryId)) {
+    showToast('Please select a category first.', true);
+    btn.disabled = false;
+    return;
+  }
   const data = {
     categoryId,
     name: document.getElementById('fName').value.trim(),

@@ -15,11 +15,44 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/menu/categories", async (_req, res): Promise<void> => {
-  const categories = await db
+const DEFAULT_CATEGORIES = [
+  {
+    name: "Starters",
+    description: "Small plates to begin the meal",
+    sortOrder: 1,
+  },
+  {
+    name: "Mains",
+    description: "Signature kitchen favorites",
+    sortOrder: 2,
+  },
+  {
+    name: "Desserts",
+    description: "Sweet finishes",
+    sortOrder: 3,
+  },
+  {
+    name: "Beverages",
+    description: "Refreshing drinks",
+    sortOrder: 4,
+  },
+];
+
+async function getCategories() {
+  return db
     .select()
     .from(menuCategoriesTable)
     .orderBy(asc(menuCategoriesTable.sortOrder));
+}
+
+router.get("/menu/categories", async (_req, res): Promise<void> => {
+  let categories = await getCategories();
+  if (categories.length === 0) {
+    categories = await db
+      .insert(menuCategoriesTable)
+      .values(DEFAULT_CATEGORIES)
+      .returning();
+  }
   res.json(categories);
 });
 
