@@ -55,6 +55,12 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
   - JavaScript: `public/js/*.js`
 - The old React/Vite frontend source has been removed from `artifacts/restaurant`.
 
+## Deployment Setup
+
+- Production build command builds the API server and runs the no-op frontend build.
+- Production run command starts the API server on internal port `8080` and the restaurant frontend on the incoming app port.
+- The incoming/public port is `18641`; do not use `8080` as the public port because that is only for the internal API proxy.
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
