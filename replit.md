@@ -2,11 +2,11 @@
 
 ## Overview
 
-A full-stack QR code-based restaurant management system built with React + Vite (frontend) and Express + PostgreSQL (backend).
+A full-stack QR code-based restaurant management system built with plain HTML, CSS, and JavaScript (frontend) and Express + PostgreSQL (backend).
 
 ## Architecture
 
-- **Frontend**: React + Vite at `/` — customer menu, order tracking, kitchen dashboard, admin panel
+- **Frontend**: Static HTML/CSS/JavaScript at `/` — customer menu, order tracking, kitchen dashboard, admin panel
 - **Backend**: Express 5 API server at `/api`
 - **Database**: PostgreSQL + Drizzle ORM
 
@@ -16,7 +16,7 @@ A full-stack QR code-based restaurant management system built with React + Vite 
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **Frontend**: React, Vite, Tailwind CSS, Wouter (routing), TanStack Query
+- **Frontend**: HTML pages, shared CSS, plain browser JavaScript
 - **API framework**: Express 5
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
@@ -49,6 +49,11 @@ A full-stack QR code-based restaurant management system built with React + Vite 
 - The frontend proxies `/api/*` requests to the API server.
 - The development database is provisioned and the Drizzle schema has been pushed.
 - Starter data has been seeded for 4 menu categories, 9 menu items, and 5 restaurant tables.
+- Frontend files live under `artifacts/restaurant/public/`:
+  - HTML pages: `index.html`, `menu.html`, `order.html`, `kitchen.html`, `admin.html`, `admin-menu.html`, `admin-tables.html`
+  - CSS: `style.css`
+  - JavaScript: `public/js/*.js`
+- The old React/Vite frontend source has been removed from `artifacts/restaurant`.
 
 ## Key Commands
 
