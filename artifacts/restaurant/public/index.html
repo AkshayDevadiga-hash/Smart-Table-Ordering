@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TableOrder — Smart Restaurant Management</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .hero { min-height: calc(100vh - 64px); display: flex; align-items: center; padding: 3rem 1.5rem; }
+    .hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-light); color: var(--primary); border-radius: 999px; padding: 0.35rem 1rem; font-size: 0.8rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .hero-title { font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.15; margin-bottom: 1.25rem; }
+    .hero-title span { color: var(--primary); }
+    .hero-desc { font-size: 1.0625rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .hero-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow-md); }
+    .hero-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .hero-card-title { font-weight: 600; font-size: 1rem; }
+    .hero-card-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .order-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .order-item:last-of-type { border-bottom: none; }
+    .order-total { display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 2px solid var(--border); font-weight: 700; font-size: 1rem; margin-top: 0.5rem; }
+    .order-progress { height: 6px; background: var(--border); border-radius: 3px; margin-top: 1rem; overflow: hidden; }
+    .order-progress-bar { height: 100%; width: 65%; background: var(--primary); border-radius: 3px; }
+    .order-confirm { background: var(--secondary-light); color: var(--secondary); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
+
+    .how-section { background: var(--card); padding: 5rem 1.5rem; border-top: 1px solid var(--border); }
+    .how-section-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+    .section-title { font-size: 2rem; margin-bottom: 0.5rem; }
+    .section-subtitle { color: var(--text-muted); margin-bottom: 3rem; font-size: 1.0625rem; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
+    .step-icon { width: 56px; height: 56px; background: var(--primary-light); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1rem; }
+    .step h3 { font-size: 1.125rem; margin-bottom: 0.5rem; }
+    .step p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+    .features-section { padding: 5rem 1.5rem; }
+    .features-inner { max-width: 1100px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .feature-card { padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); background: var(--card); }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 0.75rem; }
+    .feature-card h3 { font-size: 1.0625rem; margin-bottom: 0.5rem; }
+    .feature-card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+    @media (max-width: 768px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .hero { padding: 2rem 1rem; min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="/" class="navbar-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+        TableOrder
+      </a>
+      <div class="navbar-links">
+        <a href="/kitchen">Kitchen</a>
+        <a href="/admin" class="btn btn-primary btn-sm">Admin Panel</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h1v1h-1zm3 0h1v1h-1zm3 3h1v1h-1zm-6 3h1v1h-1zm3-3h1v1h-1z"/></svg>
+          QR Code Ordering System
+        </div>
+        <h1 class="hero-title">Dining Reimagined,<br><span>Table by Table</span></h1>
+        <p class="hero-desc">Customers scan a QR code at their table, browse your full menu, place orders, and track their food — all from their own device. No waiting, no errors, no friction.</p>
+        <div class="hero-actions">
+          <a href="/menu/1" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Try Customer View →
+          </a>
+          <a href="/admin" class="btn btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="6" rx="1"/><rect x="2" y="14" width="6" height="6" rx="1"/><rect x="9" y="3" width="13" height="6" rx="1"/><rect x="9" y="14" width="13" height="6" rx="1"/></svg>
+            Admin Dashboard
+          </a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-header">
+          <div>
+            <div class="hero-card-title">Table 4 — Order #128</div>
+            <div class="hero-card-subtitle">Placed 8 minutes ago</div>
+          </div>
+          <span class="badge badge-orange">Preparing</span>
+        </div>
+        <div class="order-item"><span><strong>2×</strong> Butter Chicken</span><span>$35.98</span></div>
+        <div class="order-item"><span><strong>3×</strong> Garlic Naan</span><span>$11.97</span></div>
+        <div class="order-item"><span><strong>2×</strong> Mango Lassi</span><span>$9.98</span></div>
+        <div class="order-total"><span>Total (incl. GST)</span><span>$60.45</span></div>
+        <div class="order-progress"><div class="order-progress-bar"></div></div>
+        <div class="order-confirm">✓ Order confirmed instantly</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-section">
+    <div class="how-section-inner">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">From scan to service in seconds</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">📱</div>
+          <h3>Scan QR Code</h3>
+          <p>Each table has a unique QR code. Customers scan it with any smartphone camera — no app needed.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">🍽️</div>
+          <h3>Browse & Order</h3>
+          <p>View the full menu with descriptions, prices and veg/non-veg markers. Add items to cart and place the order.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">👨‍🍳</div>
+          <h3>Kitchen Gets It</h3>
+          <p>The order appears instantly on the kitchen display. Staff update the status as food is prepared.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">🔔</div>
+          <h3>Track & Enjoy</h3>
+          <p>Customers see live status updates right on their phone. No guessing, no chasing down waitstaff.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <div class="features-inner">
+      <div style="text-align:center">
+        <h2 class="section-title">Everything You Need</h2>
+        <p class="section-subtitle" style="margin-bottom:0">Built for modern restaurants</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🍛</div>
+          <h3>Live Menu Management</h3>
+          <p>Add, edit, or hide menu items instantly. Mark items unavailable without removing them.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📋</div>
+          <h3>Real-Time Kitchen View</h3>
+          <p>Kanban-style board shows all active orders. Update status with one tap — Preparing, Ready, Delivered.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Admin Analytics</h3>
+          <p>Track today's orders, revenue, table occupancy and popular items from one dashboard.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔲</div>
+          <h3>QR Code Generator</h3>
+          <p>Generate and download printable QR codes for every table. Scan them to preview instantly.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3>GST Included</h3>
+          <p>5% GST is calculated automatically on every order. Totals are clear before customers confirm.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🥗</div>
+          <h3>Veg / Non-Veg Markers</h3>
+          <p>Every item is clearly tagged with the standard green (veg) or red (non-veg) dot indicator.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="background:var(--card); border-top:1px solid var(--border); padding: 2rem 1.5rem; text-align:center;">
+    <p style="font-size:0.875rem;color:var(--text-muted)">© 2026 TableOrder. Smart Restaurant Management.</p>
+  </footer>
+
+  <div class="toast-container" id="toastContainer"></div>
+</body>
+</html>

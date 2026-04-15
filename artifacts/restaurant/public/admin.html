@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — TableOrder</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .admin-content { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .stat-card { display: flex; gap: 1rem; align-items: flex-start; padding: 1.25rem 1.5rem; }
+    .stat-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .stat-meta { font-size: 0.72rem; color: var(--text-muted); }
+    .stat-num { font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+    .two-col { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+    .panel { padding: 1.5rem; }
+    .panel-title { font-size: 1.125rem; margin-bottom: 1rem; }
+    .order-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+    .order-row:last-child { border-bottom: none; }
+    .order-row-info { flex: 1; min-width: 0; }
+    .order-row-num { font-weight: 600; font-size: 0.875rem; }
+    .order-row-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .order-row-total { font-weight: 700; font-size: 0.875rem; flex-shrink: 0; }
+    .popular-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0; border-bottom: 1px solid var(--border); }
+    .popular-item:last-child { border-bottom: none; }
+    .popular-rank { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .popular-name { flex: 1; font-size: 0.875rem; font-weight: 500; }
+    .popular-count { font-size: 0.8rem; color: var(--text-muted); }
+    .mgmt-links { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem; }
+    .mgmt-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); text-decoration: none; color: var(--text); transition: background 0.15s; }
+    .mgmt-link:hover { background: var(--primary-light); }
+    .mgmt-link-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .mgmt-link-text { font-size: 0.875rem; font-weight: 600; }
+    .mgmt-link-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .no-data { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.875rem; }
+    .active-badge { color: var(--primary); font-size: 0.72rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div class="page-header-title">
+        <a href="/" class="back-btn">←</a>
+        <span>🧑‍💼</span>
+        Admin Dashboard
+      </div>
+      <a href="/kitchen" class="btn btn-outline btn-sm">Kitchen View</a>
+    </div>
+  </header>
+
+  <div class="admin-content">
+    <div class="stats-grid" id="statsGrid">
+      <div class="card skeleton" style="height:100px"></div>
+      <div class="card skeleton" style="height:100px"></div>
+      <div class="card skeleton" style="height:100px"></div>
+      <div class="card skeleton" style="height:100px"></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <h2 class="panel-title" style="margin:0">Recent Orders</h2>
+          <span style="font-size:0.75rem;color:var(--text-muted)">Last 20 orders</span>
+        </div>
+        <div id="recentOrders"><div class="skeleton" style="height:48px;margin-bottom:0.5rem"></div><div class="skeleton" style="height:48px;margin-bottom:0.5rem"></div></div>
+      </div>
+      <div>
+        <div class="card panel" style="margin-bottom:1.5rem">
+          <h2 class="panel-title">Popular Items</h2>
+          <div id="popularItems"><div class="skeleton" style="height:36px;margin-bottom:0.5rem"></div></div>
+        </div>
+        <div class="card panel">
+          <h2 class="panel-title">Management</h2>
+          <div class="mgmt-links">
+            <a href="/admin/menu" class="mgmt-link">
+              <div class="mgmt-link-icon">🍛</div>
+              <div><div class="mgmt-link-text">Menu Management</div><div class="mgmt-link-sub">Add, edit, and remove items</div></div>
+            </a>
+            <a href="/admin/tables" class="mgmt-link">
+              <div class="mgmt-link-icon">🔲</div>
+              <div><div class="mgmt-link-text">Tables & QR Codes</div><div class="mgmt-link-sub">View and print QR codes</div></div>
+            </a>
+            <a href="/kitchen" class="mgmt-link">
+              <div class="mgmt-link-icon">👨‍🍳</div>
+              <div><div class="mgmt-link-text">Kitchen Dashboard</div><div class="mgmt-link-sub">Live order management</div></div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    async function api(path) {
+      const res = await fetch('/api' + path);
+      if (!res.ok) throw new Error();
+      return res.json();
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+      if (diff < 60) return diff + 's ago';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      return Math.floor(diff / 3600) + 'h ago';
+    }
+
+    const STATUS_BADGE = { pending:'badge-yellow', received:'badge-blue', preparing:'badge-orange', ready:'badge-green', delivered:'badge-gray', cancelled:'badge-red' };
+
+    async function loadStats() {
+      try {
+        const s = await api('/admin/stats');
+        document.getElementById('statsGrid').innerHTML = `
+          <div class="card stat-card">
+            <div class="stat-icon">📦</div>
+            <div>
+              <div class="stat-meta">Today</div>
+              <div class="stat-num">${s.totalOrdersToday}</div>
+              <div class="stat-label">Orders Today</div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon">💰</div>
+            <div>
+              <div class="stat-meta">Today</div>
+              <div class="stat-num">$${parseFloat(s.totalRevenueToday).toFixed(2)}</div>
+              <div class="stat-label">Revenue Today</div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon">📋</div>
+            <div>
+              <div class="stat-meta ${s.activeOrders > 0 ? 'active-badge' : ''}">${s.activeOrders > 0 ? s.activeOrders + ' active' : '0 active'}</div>
+              <div class="stat-num">${s.activeOrders}</div>
+              <div class="stat-label">Active Orders</div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon">🪑</div>
+            <div>
+              <div class="stat-meta">${s.totalTables} total</div>
+              <div class="stat-num">${s.tablesOccupied}</div>
+              <div class="stat-label">Tables Occupied</div>
+            </div>
+          </div>
+        `;
+
+        const popularEl = document.getElementById('popularItems');
+        if (!s.popularItems || !s.popularItems.length) {
+          popularEl.innerHTML = '<div class="no-data">No data yet</div>';
+        } else {
+          popularEl.innerHTML = s.popularItems.map((item, i) =>
+            `<div class="popular-item">
+              <div class="popular-rank">${i+1}</div>
+              <div class="popular-name">${item.name}</div>
+              <div class="popular-count">${item.count} sold</div>
+            </div>`
+          ).join('');
+        }
+      } catch {}
+    }
+
+    async function loadRecentOrders() {
+      try {
+        const orders = await api('/admin/recent-orders');
+        const el = document.getElementById('recentOrders');
+        if (!orders.length) {
+          el.innerHTML = '<div class="no-data">No orders yet</div>';
+          return;
+        }
+        el.innerHTML = orders.map(o =>
+          `<div class="order-row">
+            <div class="order-row-info">
+              <div class="order-row-num">Order #${o.id} · Table ${o.tableNumber}</div>
+              <div class="order-row-sub">${timeAgo(o.createdAt)} · ${(o.items||[]).length} item(s)</div>
+            </div>
+            <span class="badge ${STATUS_BADGE[o.status] || 'badge-gray'}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+            <div class="order-row-total">$${parseFloat(o.totalAmount).toFixed(2)}</div>
+          </div>`
+        ).join('');
+      } catch {}
+    }
+
+    loadStats();
+    loadRecentOrders();
+  </script>
+</body>
+</html>

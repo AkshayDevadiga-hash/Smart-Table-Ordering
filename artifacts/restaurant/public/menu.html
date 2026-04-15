@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu — TableOrder</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .menu-header { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .menu-header-inner { max-width: 780px; margin: 0 auto; padding: 0 1rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .menu-brand { display: flex; align-items: center; gap: 0.625rem; }
+    .menu-brand-icon { width: 36px; height: 36px; background: var(--primary-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+    .menu-brand-name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem; }
+    .menu-brand-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .cart-btn { position: relative; display: flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff; border: none; border-radius: 999px; padding: 0.5rem 1.125rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+    .cart-count { background: rgba(255,255,255,0.25); border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.75rem; font-weight: 700; }
+
+    .tabs-wrap { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 64px; z-index: 90; }
+    .tabs-wrap-inner { max-width: 780px; margin: 0 auto; padding: 0.75rem 1rem; }
+
+    .menu-content { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 8rem; }
+    .category-section { margin-bottom: 2.5rem; }
+    .category-title { font-size: 1.375rem; margin-bottom: 0.25rem; }
+    .category-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+    .menu-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.625rem; }
+    .menu-item-info { flex: 1; min-width: 0; }
+    .menu-item-name-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+    .menu-item-name { font-weight: 600; font-size: 0.9375rem; }
+    .menu-item-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .menu-item-price { font-weight: 700; font-size: 0.9375rem; color: var(--primary); }
+    .menu-item-veg { font-size: 0.72rem; color: var(--secondary); font-weight: 600; }
+    .unavailable { opacity: 0.45; }
+
+    .add-btn { width: 36px; height: 36px; background: var(--primary); color: #fff; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 1.25rem; transition: opacity 0.15s; }
+    .add-btn:hover { opacity: 0.85; }
+    .qty-controls { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .qty-btn { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--primary); background: transparent; color: var(--primary); font-size: 1.125rem; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700; }
+    .qty-btn:hover { background: var(--primary-light); }
+    .qty-value { font-weight: 700; font-size: 0.9375rem; min-width: 20px; text-align: center; }
+
+    /* Cart drawer */
+    .cart-drawer { position: fixed; right: 0; bottom: 0; left: 0; z-index: 300; }
+    .cart-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
+    .cart-panel { background: var(--card); border-radius: 20px 20px 0 0; padding: 1.5rem 1rem 1rem; max-width: 500px; margin: 0 auto; max-height: 75vh; overflow-y: auto; position: relative; z-index: 300; }
+    .cart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .cart-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0; border-bottom: 1px solid var(--border); }
+    .cart-item-name { flex: 1; font-size: 0.875rem; font-weight: 500; }
+    .cart-item-price { font-size: 0.875rem; font-weight: 600; color: var(--primary); }
+    .cart-remove { width: 24px; height: 24px; border-radius: 6px; border: none; background: var(--destructive-light); color: var(--destructive); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .cart-summary { padding-top: 1rem; }
+    .cart-row { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.375rem; }
+    .cart-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.0625rem; padding-top: 0.5rem; border-top: 2px solid var(--border); margin-top: 0.5rem; }
+    .special-instructions { margin: 1rem 0; }
+    .cart-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+    .hidden { display: none !important; }
+    .sticky-cart { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 100; animation: slideUp 0.2s ease; }
+    @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <header class="menu-header">
+    <div class="menu-header-inner">
+      <div class="menu-brand">
+        <div class="menu-brand-icon">🍽️</div>
+        <div>
+          <div class="menu-brand-name">TableOrder</div>
+          <div class="menu-brand-sub" id="tableLabel">Loading…</div>
+        </div>
+      </div>
+      <button class="cart-btn" id="cartToggle" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Cart
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="tabs-wrap">
+    <div class="tabs-wrap-inner">
+      <div class="tab-bar" id="categoryTabs"></div>
+    </div>
+  </div>
+
+  <div class="menu-content" id="menuContent">
+    <div id="skeletons">
+      <div class="skeleton" style="height:20px;width:120px;margin-bottom:0.5rem"></div>
+      <div class="skeleton" style="height:72px;margin-bottom:0.5rem"></div>
+      <div class="skeleton" style="height:72px;margin-bottom:0.5rem"></div>
+      <div class="skeleton" style="height:72px;margin-bottom:2rem"></div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div id="cartBackdrop" class="cart-backdrop hidden" onclick="closeCart()"></div>
+  <div id="cartDrawer" class="cart-drawer hidden">
+    <div class="cart-panel">
+      <div class="cart-header">
+        <h2 style="font-size:1.25rem">Your Order</h2>
+        <button onclick="closeCart()" class="btn-icon">✕</button>
+      </div>
+      <div id="cartItems"></div>
+      <div class="cart-summary" id="cartSummary"></div>
+      <div class="special-instructions">
+        <label class="form-label">Special Instructions (optional)</label>
+        <textarea class="form-textarea" id="specialInstructions" placeholder="Allergies, preferences…" rows="2"></textarea>
+      </div>
+      <div class="cart-actions">
+        <button class="btn btn-outline" style="flex:1" onclick="closeCart()">Keep Browsing</button>
+        <button class="btn btn-primary" style="flex:1" id="placeOrderBtn" onclick="placeOrder()">Place Order</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const tableId = parseInt(window.location.pathname.split('/menu/')[1]) || 1;
+    let categories = [];
+    let menuItems = [];
+    let cart = {}; // itemId -> { item, qty }
+    let activeCategory = null;
+
+    function showToast(msg, error) {
+      const el = document.createElement('div');
+      el.className = 'toast' + (error ? ' error' : '');
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    async function api(path, opts) {
+      const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+      if (!res.ok) throw new Error(await res.text());
+      if (res.status === 204) return null;
+      return res.json();
+    }
+
+    async function load() {
+      try {
+        const table = await api('/tables/' + tableId);
+        document.getElementById('tableLabel').textContent = 'Table ' + table.tableNumber;
+        document.title = 'Menu — Table ' + table.tableNumber;
+      } catch {}
+      try {
+        [categories, menuItems] = await Promise.all([api('/menu/categories'), api('/menu/items')]);
+        renderTabs();
+        renderMenu();
+      } catch (e) {
+        document.getElementById('skeletons').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:3rem">Failed to load menu. Please try again.</p>';
+      }
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById('categoryTabs');
+      tabs.innerHTML = '';
+      const all = document.createElement('button');
+      all.className = 'tab-btn active';
+      all.textContent = 'All';
+      all.onclick = () => { activeCategory = null; setActiveTab(all); renderMenu(); };
+      tabs.appendChild(all);
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.textContent = cat.name;
+        btn.onclick = () => { activeCategory = cat.id; setActiveTab(btn); renderMenu(); };
+        tabs.appendChild(btn);
+      });
+    }
+
+    function setActiveTab(el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function renderMenu() {
+      const container = document.getElementById('menuContent');
+      const filtered = activeCategory ? categories.filter(c => c.id === activeCategory) : categories;
+      container.innerHTML = '';
+      filtered.forEach(cat => {
+        const items = menuItems.filter(i => i.categoryId === cat.id);
+        if (!items.length) return;
+        const sec = document.createElement('div');
+        sec.className = 'category-section';
+        sec.id = 'cat-' + cat.id;
+        sec.innerHTML = `<h2 class="category-title">${cat.name}</h2><p class="category-desc">${cat.description || ''}</p>`;
+        items.forEach(item => {
+          const qty = cart[item.id]?.qty || 0;
+          const div = document.createElement('div');
+          div.className = 'menu-item' + (!item.isAvailable ? ' unavailable' : '');
+          div.innerHTML = `
+            <div class="menu-item-info">
+              <div class="menu-item-name-row">
+                <span class="${item.isVeg ? 'veg-dot' : 'nonveg-dot'}"></span>
+                <span class="menu-item-name">${item.name}</span>
+              </div>
+              ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
+              <div style="display:flex;align-items:center;gap:0.5rem">
+                <span class="menu-item-price">$${parseFloat(item.price).toFixed(2)}</span>
+                ${item.isVeg ? '<span class="menu-item-veg">🌿 Veg</span>' : ''}
+              </div>
+            </div>
+            ${item.isAvailable
+              ? qty === 0
+                ? `<button class="add-btn" onclick="addToCart(${item.id})">+</button>`
+                : `<div class="qty-controls">
+                    <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+                    <span class="qty-value">${qty}</span>
+                    <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                  </div>`
+              : '<span style="font-size:0.75rem;color:var(--text-muted)">Unavailable</span>'}
+          `;
+          sec.appendChild(div);
+        });
+        container.appendChild(sec);
+      });
+    }
+
+    function addToCart(itemId) {
+      const item = menuItems.find(i => i.id === itemId);
+      if (!item) return;
+      cart[itemId] = { item, qty: 1 };
+      updateCartUI();
+      renderMenu();
+    }
+
+    function changeQty(itemId, delta) {
+      if (!cart[itemId]) return;
+      cart[itemId].qty += delta;
+      if (cart[itemId].qty <= 0) delete cart[itemId];
+      updateCartUI();
+      renderMenu();
+    }
+
+    function updateCartUI() {
+      const total = Object.values(cart).reduce((s, c) => s + c.qty, 0);
+      const cartCount = document.getElementById('cartCount');
+      const cartToggle = document.getElementById('cartToggle');
+      cartCount.textContent = total;
+      cartToggle.style.display = total > 0 ? 'flex' : 'none';
+    }
+
+    function openCart() {
+      renderCartDrawer();
+      document.getElementById('cartDrawer').classList.remove('hidden');
+      document.getElementById('cartBackdrop').classList.remove('hidden');
+    }
+
+    function closeCart() {
+      document.getElementById('cartDrawer').classList.add('hidden');
+      document.getElementById('cartBackdrop').classList.add('hidden');
+    }
+
+    document.getElementById('cartToggle').addEventListener('click', openCart);
+
+    function renderCartDrawer() {
+      const items = Object.values(cart);
+      const itemsEl = document.getElementById('cartItems');
+      const summaryEl = document.getElementById('cartSummary');
+      itemsEl.innerHTML = '';
+      let subtotal = 0;
+      items.forEach(({ item, qty }) => {
+        const lineTotal = parseFloat(item.price) * qty;
+        subtotal += lineTotal;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          <div class="qty-controls" style="gap:0.375rem">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1);renderCartDrawer()" style="width:26px;height:26px">−</button>
+            <span class="qty-value">${qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1);renderCartDrawer()" style="width:26px;height:26px">+</button>
+          </div>
+          <span class="cart-item-name">${item.name}</span>
+          <span class="cart-item-price">$${lineTotal.toFixed(2)}</span>
+          <button class="cart-remove" onclick="changeQty(${item.id}, -99);updateCartUI();renderCartDrawer()">✕</button>
+        `;
+        itemsEl.appendChild(div);
+      });
+      const tax = subtotal * 0.05;
+      const total = subtotal + tax;
+      summaryEl.innerHTML = `
+        <div class="cart-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+        <div class="cart-row"><span>GST (5%)</span><span>$${tax.toFixed(2)}</span></div>
+        <div class="cart-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+      `;
+      updateCartUI();
+    }
+
+    async function placeOrder() {
+      const items = Object.values(cart);
+      if (!items.length) return;
+      const btn = document.getElementById('placeOrderBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> Placing…';
+      try {
+        const order = await api('/orders', {
+          method: 'POST',
+          body: JSON.stringify({
+            tableId,
+            specialInstructions: document.getElementById('specialInstructions').value || null,
+            items: items.map(({ item, qty }) => ({ menuItemId: item.id, quantity: qty })),
+          }),
+        });
+        cart = {};
+        updateCartUI();
+        closeCart();
+        showToast('Order placed! Redirecting…');
+        setTimeout(() => { window.location.href = '/order/' + order.id; }, 1000);
+      } catch {
+        showToast('Failed to place order. Try again.', true);
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
