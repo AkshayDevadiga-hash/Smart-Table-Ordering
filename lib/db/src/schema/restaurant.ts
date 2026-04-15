@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const tableStatusEnum = pgEnum("table_status", ["available", "occupied", "reserved"]);
 export const orderStatusEnum = pgEnum("order_status", ["pending", "received", "preparing", "ready", "delivered", "completed", "cancelled"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid"]);
 
 export const menuCategoriesTable = pgTable("menu_categories", {
   id: serial("id").primaryKey(),
@@ -39,6 +40,7 @@ export const ordersTable = pgTable("orders", {
   id: serial("id").primaryKey(),
   tableId: integer("table_id").notNull().references(() => tablesTable.id),
   status: orderStatusEnum("status").notNull().default("pending"),
+  paymentStatus: paymentStatusEnum("payment_status").notNull().default("pending"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0"),
   tax: decimal("tax", { precision: 10, scale: 2 }).notNull().default("0"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),

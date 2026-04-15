@@ -11,7 +11,7 @@ router.get("/admin/stats", async (_req, res): Promise<void> => {
   const [ordersToday] = await db
     .select({ count: sql<number>`count(*)`, revenue: sql<string>`coalesce(sum(total), 0)` })
     .from(ordersTable)
-    .where(sql`created_at >= ${today}`);
+    .where(sql`created_at >= ${today} and payment_status = 'paid'`);
 
   const activeStatuses = ["pending", "received", "preparing", "ready"];
   const [activeOrdersCount] = await db
@@ -28,6 +28,8 @@ router.get("/admin/stats", async (_req, res): Promise<void> => {
       count: sql<number>`sum(quantity)::int`,
     })
     .from(orderItemsTable)
+    .innerJoin(ordersTable, eq(orderItemsTable.orderId, ordersTable.id))
+    .where(eq(ordersTable.paymentStatus, "paid"))
     .groupBy(orderItemsTable.menuItemName)
     .orderBy(desc(sql`sum(quantity)`))
     .limit(5);

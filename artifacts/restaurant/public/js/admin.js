@@ -13,6 +13,11 @@ function timeAgo(dateStr) {
 
 const STATUS_BADGE = { pending:'badge-yellow', received:'badge-blue', preparing:'badge-orange', ready:'badge-green', delivered:'badge-gray', cancelled:'badge-red' };
 
+function money(value) {
+  const amount = Number(value);
+  return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+}
+
 async function loadStats() {
   try {
     const s = await api('/admin/stats');
@@ -29,8 +34,8 @@ async function loadStats() {
         <div class="stat-icon">💰</div>
         <div>
           <div class="stat-meta">Today</div>
-          <div class="stat-num">$${parseFloat(s.totalRevenueToday).toFixed(2)}</div>
-          <div class="stat-label">Revenue Today</div>
+          <div class="stat-num">${money(s.totalRevenueToday)}</div>
+          <div class="stat-label">Paid Revenue Today</div>
         </div>
       </div>
       <div class="card stat-card">
@@ -80,8 +85,11 @@ async function loadRecentOrders() {
           <div class="order-row-num">Order #${o.id} · Table ${o.tableNumber}</div>
           <div class="order-row-sub">${timeAgo(o.createdAt)} · ${(o.items||[]).length} item(s)</div>
         </div>
-        <span class="badge ${STATUS_BADGE[o.status] || 'badge-gray'}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
-        <div class="order-row-total">$${parseFloat(o.totalAmount).toFixed(2)}</div>
+        <div style="display:flex;gap:0.375rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          <span class="badge ${STATUS_BADGE[o.status] || 'badge-gray'}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+          <span class="badge ${o.paymentStatus === 'paid' ? 'badge-green' : 'badge-yellow'}">${o.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}</span>
+        </div>
+        <div class="order-row-total">${money(o.total)}</div>
       </div>`
     ).join('');
   } catch {}

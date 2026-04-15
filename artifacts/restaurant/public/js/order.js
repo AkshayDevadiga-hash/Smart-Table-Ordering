@@ -13,6 +13,16 @@ const STATUS_MESSAGES = {
 let order = null;
 let interval = null;
 
+function money(value) {
+  const amount = Number(value);
+  return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+}
+
+function safeNumber(value) {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount : 0;
+}
+
 function showToast(msg, error) {
   const el = document.createElement('div');
   el.className = 'toast' + (error ? ' error' : '');
@@ -21,8 +31,8 @@ function showToast(msg, error) {
   setTimeout(() => el.remove(), 3500);
 }
 
-async function api(path) {
-  const res = await fetch('/api' + path);
+async function api(path, opts) {
+  const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -52,11 +62,13 @@ function renderContent(o) {
   }).join('');
 
   let itemsHtml = (o.items || []).map(item =>
-    `<div class="order-line"><span>${item.quantity}× ${item.menuItemName}</span><span>$${(parseFloat(item.unitPrice)*item.quantity).toFixed(2)}</span></div>`
+    `<div class="order-line"><span>${item.quantity}× ${item.menuItemName}</span><span>${money(safeNumber(item.unitPrice) * safeNumber(item.quantity))}</span></div>`
   ).join('');
 
-  const subtotal = parseFloat(o.totalAmount) / 1.05;
-  const tax = parseFloat(o.totalAmount) - subtotal;
+  const subtotal = safeNumber(o.subtotal);
+  const tax = safeNumber(o.tax);
+  const total = safeNumber(o.total);
+  const paymentStatus = o.paymentStatus || 'pending';
 
   document.getElementById('content').innerHTML = `
     <div class="status-message ${meta.class}" style="background:var(--primary-light)">
@@ -72,22 +84,39 @@ function renderContent(o) {
           <div class="order-num">Order #${o.id}</div>
           <div class="order-time">${timeAgo(o.createdAt)} · Table ${o.tableNumber || ''}</div>
         </div>
-        <span class="badge badge-${getStatusBadge(o.status)}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          <span class="badge badge-${getStatusBadge(o.status)}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+          <span class="badge ${paymentStatus === 'paid' ? 'badge-green' : 'badge-yellow'}">${paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}</span>
+        </div>
       </div>
       <div class="order-items-list">
         ${itemsHtml}
         <div class="order-subtotal">
-          <div class="order-subtotal-line"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
-          <div class="order-subtotal-line"><span>GST (5%)</span><span>$${tax.toFixed(2)}</span></div>
-          <div class="order-total-line"><span>Total</span><span>$${parseFloat(o.totalAmount).toFixed(2)}</span></div>
+          <div class="order-subtotal-line"><span>Subtotal</span><span>${money(subtotal)}</span></div>
+          <div class="order-subtotal-line"><span>GST (18%)</span><span>${money(tax)}</span></div>
+          <div class="order-total-line"><span>Total</span><span>${money(total)}</span></div>
         </div>
       </div>
       ${o.specialInstructions ? `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-muted)">📝 ${o.specialInstructions}</div>` : ''}
+      ${paymentStatus !== 'paid' ? `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>` : '<div class="status-message badge-green" style="margin-top:1rem;margin-bottom:0;background:var(--secondary-light)">Payment completed. Thank you.</div>'}
     </div>
     ${o.status !== 'delivered' && o.status !== 'cancelled'
       ? '<div class="refresh-hint">🔄 Auto-refreshing every 5 seconds…</div>'
       : ''}
   `;
+}
+
+async function payOrder() {
+  try {
+    order = await api('/orders/' + orderId + '/payment', {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentStatus: 'paid' }),
+    });
+    renderContent(order);
+    showToast('Payment completed');
+  } catch {
+    showToast('Payment failed. Please try again.', true);
+  }
 }
 
 function getStatusBadge(s) {

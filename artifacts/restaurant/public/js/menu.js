@@ -3,6 +3,31 @@ let categories = [];
 let menuItems = [];
 let cart = {}; // itemId -> { item, qty }
 let activeCategory = null;
+const CART_KEY = 'tableorder-cart-' + tableId;
+const GST_RATE = 0.18;
+
+function money(value) {
+  const amount = Number(value);
+  return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+}
+
+function itemPrice(item) {
+  const price = Number(item?.price);
+  return Number.isFinite(price) && price >= 0 ? price : 0;
+}
+
+function saveCart() {
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+}
+
+function loadCart() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
+    if (saved && typeof saved === 'object') cart = saved;
+  } catch {
+    cart = {};
+  }
+}
 
 function showToast(msg, error) {
   const el = document.createElement('div');
@@ -20,6 +45,7 @@ async function api(path, opts) {
 }
 
 async function load() {
+  loadCart();
   try {
     const table = await api('/tables/' + tableId);
     document.getElementById('tableLabel').textContent = 'Table ' + table.tableNumber;
@@ -79,7 +105,7 @@ function renderMenu() {
           </div>
           ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
           <div style="display:flex;align-items:center;gap:0.5rem">
-            <span class="menu-item-price">$${parseFloat(item.price).toFixed(2)}</span>
+            <span class="menu-item-price">${money(itemPrice(item))}</span>
             ${item.isVeg ? '<span class="menu-item-veg">🌿 Veg</span>' : ''}
           </div>
         </div>
@@ -103,6 +129,7 @@ function addToCart(itemId) {
   const item = menuItems.find(i => i.id === itemId);
   if (!item) return;
   cart[itemId] = { item, qty: 1 };
+  saveCart();
   updateCartUI();
   renderMenu();
 }
@@ -111,6 +138,7 @@ function changeQty(itemId, delta) {
   if (!cart[itemId]) return;
   cart[itemId].qty += delta;
   if (cart[itemId].qty <= 0) delete cart[itemId];
+  saveCart();
   updateCartUI();
   renderMenu();
 }
@@ -143,7 +171,7 @@ function renderCartDrawer() {
   itemsEl.innerHTML = '';
   let subtotal = 0;
   items.forEach(({ item, qty }) => {
-    const lineTotal = parseFloat(item.price) * qty;
+    const lineTotal = itemPrice(item) * Number(qty || 0);
     subtotal += lineTotal;
     const div = document.createElement('div');
     div.className = 'cart-item';
@@ -154,17 +182,17 @@ function renderCartDrawer() {
         <button class="qty-btn" onclick="changeQty(${item.id}, 1);renderCartDrawer()" style="width:26px;height:26px">+</button>
       </div>
       <span class="cart-item-name">${item.name}</span>
-      <span class="cart-item-price">$${lineTotal.toFixed(2)}</span>
+      <span class="cart-item-price">${money(lineTotal)}</span>
       <button class="cart-remove" onclick="changeQty(${item.id}, -99);updateCartUI();renderCartDrawer()">✕</button>
     `;
     itemsEl.appendChild(div);
   });
-  const tax = subtotal * 0.05;
+  const tax = subtotal * GST_RATE;
   const total = subtotal + tax;
   summaryEl.innerHTML = `
-    <div class="cart-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
-    <div class="cart-row"><span>GST (5%)</span><span>$${tax.toFixed(2)}</span></div>
-    <div class="cart-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+    <div class="cart-row"><span>Subtotal</span><span>${money(subtotal)}</span></div>
+    <div class="cart-row"><span>GST (18%)</span><span>${money(tax)}</span></div>
+    <div class="cart-total"><span>Total</span><span>${money(total)}</span></div>
   `;
   updateCartUI();
 }
@@ -181,10 +209,11 @@ async function placeOrder() {
       body: JSON.stringify({
         tableId,
         specialInstructions: document.getElementById('specialInstructions').value || null,
-        items: items.map(({ item, qty }) => ({ menuItemId: item.id, quantity: qty })),
+        items: items.map(({ item, qty }) => ({ menuItemId: item.id, quantity: Number(qty || 0) })),
       }),
     });
     cart = {};
+    localStorage.removeItem(CART_KEY);
     updateCartUI();
     closeCart();
     showToast('Order placed! Redirecting…');

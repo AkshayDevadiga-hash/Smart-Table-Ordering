@@ -3,6 +3,11 @@ let menuItems = [];
 let editingId = null;
 let activeFilter = null;
 
+function money(value) {
+  const amount = Number(value);
+  return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+}
+
 function showToast(msg, error) {
   const el = document.createElement('div');
   el.className = 'toast' + (error ? ' error' : '');
@@ -81,7 +86,7 @@ function renderMenu() {
             </div>
             ${item.description ? `<div class="item-row-desc">${item.description}</div>` : ''}
           </div>
-          <div class="item-price">$${parseFloat(item.price).toFixed(2)}</div>
+          <div class="item-price">${money(item.price)}</div>
           <div class="item-actions">
             <button class="icon-btn" title="${item.isAvailable ? 'Mark unavailable' : 'Mark available'}" onclick="toggleAvail(${item.id})">${item.isAvailable ? '👁️' : '🙈'}</button>
             <button class="icon-btn" title="Edit" onclick="openEdit(${item.id})">✏️</button>

@@ -10,7 +10,7 @@ import {
   GetOrderBillParams,
 } from "@workspace/api-zod";
 
-const TAX_RATE = 0.05; // 5% GST
+const TAX_RATE = 0.18;
 
 const router: IRouter = Router();
 
@@ -80,6 +80,10 @@ router.post("/orders", async (req, res): Promise<void> => {
   }
 
   const { tableId, items, specialInstructions } = parsed.data;
+  if (!items.length) {
+    res.status(400).json({ error: "Order must contain at least one item" });
+    return;
+  }
 
   const [table] = await db.select().from(tablesTable).where(eq(tablesTable.id, tableId));
   if (!table) {
@@ -94,6 +98,11 @@ router.post("/orders", async (req, res): Promise<void> => {
   let subtotal = 0;
   const orderItemsData = [];
   for (const item of items) {
+    const quantity = Number(item.quantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      res.status(400).json({ error: "Item quantity must be a positive whole number" });
+      return;
+    }
     const menuItem = menuItemMap.get(item.menuItemId);
     if (!menuItem) {
       res.status(400).json({ error: `Menu item ${item.menuItemId} not found` });
@@ -103,12 +112,16 @@ router.post("/orders", async (req, res): Promise<void> => {
       res.status(400).json({ error: `Menu item ${menuItem.name} is not available` });
       return;
     }
-    const unitPrice = parseFloat(menuItem.price);
-    subtotal += unitPrice * item.quantity;
+    const unitPrice = Number(menuItem.price);
+    if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+      res.status(400).json({ error: `Menu item ${menuItem.name} has an invalid price` });
+      return;
+    }
+    subtotal += unitPrice * quantity;
     orderItemsData.push({
       menuItemId: item.menuItemId,
       menuItemName: menuItem.name,
-      quantity: item.quantity,
+      quantity,
       unitPrice: menuItem.price,
       specialInstructions: item.specialInstructions ?? null,
     });
@@ -120,6 +133,7 @@ router.post("/orders", async (req, res): Promise<void> => {
   const [order] = await db.insert(ordersTable).values({
     tableId,
     status: "pending",
+    paymentStatus: "pending",
     subtotal: subtotal.toFixed(2),
     tax: tax.toFixed(2),
     total: total.toFixed(2),
@@ -184,6 +198,33 @@ router.patch("/orders/:orderId", async (req, res): Promise<void> => {
   res.json(result);
 });
 
+router.patch("/orders/:orderId/payment", async (req, res): Promise<void> => {
+  const params = UpdateOrderStatusParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  if (req.body?.paymentStatus !== "paid") {
+    res.status(400).json({ error: "paymentStatus must be paid" });
+    return;
+  }
+
+  const [order] = await db
+    .update(ordersTable)
+    .set({ paymentStatus: "paid", updatedAt: new Date() })
+    .where(eq(ordersTable.id, params.data.orderId))
+    .returning();
+
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+
+  const result = await getOrderWithItems(order.id);
+  res.json(result);
+});
+
 router.get("/orders/:orderId/bill", async (req, res): Promise<void> => {
   const params = GetOrderBillParams.safeParse(req.params);
   if (!params.success) {
@@ -206,6 +247,7 @@ router.get("/orders/:orderId/bill", async (req, res): Promise<void> => {
     tax: order.tax,
     total: order.total,
     status: order.status,
+    paymentStatus: order.paymentStatus,
     createdAt: order.createdAt,
   });
 });
