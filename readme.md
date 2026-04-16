@@ -252,7 +252,6 @@ All API routes are prefixed with `/api`.
 | Role    | Username  | Password      |
 |---------|-----------|---------------|
 | Admin   | admin     | admin1234     |
-| Kitchen | kitchen   | kitchen1234   |
 
 > These can be overridden by setting `ADMIN_PASSWORD` and `KITCHEN_PASSWORD` as environment variables.
 
