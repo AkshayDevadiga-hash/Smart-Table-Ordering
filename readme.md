@@ -242,8 +242,7 @@ All API routes are prefixed with `/api`.
 | DATABASE_URL     | Yes      | —                              | PostgreSQL connection string         |
 | PORT             | Yes      | —                              | Port for each server process         |
 | JWT_SECRET       | No       | `tableorder-secret-key-2024`   | Signing key for auth tokens          |
-| ADMIN_PASSWORD   | No       | `admin1234`                    | Password for the admin user          |
-| KITCHEN_PASSWORD | No       | `kitchen1234`                  | Password for the kitchen user        |
+| ADMIN_PASSWORD   | No       | `admin1234`                    | Password for the admin and kitchen user          |
 | NODE_ENV         | No       | —                              | Set to `production` for prod logging |
 
 ---
