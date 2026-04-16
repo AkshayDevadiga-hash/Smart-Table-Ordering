@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -33,8 +34,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images statically
+// Ensure uploads directory exists
 const uploadsDir = path.resolve(__dirname, "..", "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Serve uploaded images statically
 app.use("/uploads", express.static(uploadsDir));
 
 app.use("/api", router);

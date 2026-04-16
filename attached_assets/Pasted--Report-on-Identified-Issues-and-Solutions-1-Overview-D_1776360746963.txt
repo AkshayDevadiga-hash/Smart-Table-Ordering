@@ -1,0 +1,263 @@
+# **Report on Identified Issues and Solutions**
+
+## **1. Overview**
+
+During the development and testing of the Smart Restaurant Ordering System, several critical issues were identified related to image rendering, project documentation, and local deployment. These issues impact usability, maintainability, and development workflow. This report provides a detailed explanation of each problem along with appropriate solutions.
+
+---
+
+# **2. Issue 1: Images Not Displaying in Customer and Admin View**
+
+## **Problem Description:**
+
+Even after adding images while creating menu items, the images are not visible in:
+
+* Customer interface
+* Admin dashboard
+
+---
+
+## **Root Cause:**
+
+The issue typically arises due to one or more of the following reasons:
+
+* Backend is not serving image files properly
+* Incorrect image URL stored in database
+* Frontend is not using the correct path to display images
+
+---
+
+## **Proposed Solution:**
+
+### **1. Serve Static Files from Backend**
+
+The backend must expose the folder where images are stored.
+
+### **Implementation:**
+
+```js
+app.use("/uploads", express.static("uploads"));
+```
+
+---
+
+### **2. Store Correct Image Path**
+
+When saving image:
+
+```js
+image_url = "/uploads/" + filename
+```
+
+---
+
+### **3. Correct Frontend Rendering**
+
+Instead of directly using image path:
+
+```js
+<img src={item.image_url} />
+```
+
+Use:
+
+```js
+<img src={`http://localhost:5000${item.image_url}`} />
+```
+
+---
+
+## **Expected Outcome:**
+
+* Images display correctly in all views
+* Improved UI/UX
+
+---
+
+# **3. Issue 2: Need for Complete Project Documentation (PDF)**
+
+## **Problem Description:**
+
+There is a requirement for a detailed and structured report containing:
+
+* Project overview
+* Architecture
+* Technology stack
+* Database design
+* API structure
+* Modules and workflow
+
+This report is needed for academic submission and AI-based implementation.
+
+---
+
+## **Proposed Solution:**
+
+### **Create a Comprehensive Technical Document**
+
+The document should include:
+
+### **1. Introduction**
+
+* Purpose of the system
+* Problem statement
+
+### **2. System Architecture**
+
+* Client-server model
+* Components overview
+
+### **3. Technology Stack**
+
+* Frontend, backend, database
+
+### **4. Database Schema**
+
+* Tables and relationships
+
+### **5. API Design**
+
+* Endpoints and request-response
+
+### **6. Functional Modules**
+
+* QR system
+* Order system
+* Billing system
+
+### **7. Workflow**
+
+* Step-by-step process
+
+### **8. Security Measures**
+
+* Authentication
+* Data protection
+
+### **9. UI Design**
+
+* Layout and features
+
+---
+
+## **Expected Outcome:**
+
+* Clear project understanding
+* Useful for viva and documentation
+* Can be converted into PDF format
+
+---
+
+# **4. Issue 3: Running Project Locally and Database Setup**
+
+## **Problem Description:**
+
+The user needs to:
+
+* Run the project locally on their system
+* Set up and connect the database
+
+---
+
+## **Proposed Solution:**
+
+---
+
+## **4.1 Running the Project Locally**
+
+### **Step 1: Install Required Software**
+
+* Node.js
+* npm (Node Package Manager)
+
+---
+
+### **Step 2: Install Dependencies**
+
+Run in both frontend and backend folders:
+
+```bash
+npm install
+```
+
+---
+
+### **Step 3: Start Backend Server**
+
+```bash
+npm run dev
+```
+
+Server runs on:
+
+```
+http://localhost:5000
+```
+
+---
+
+### **Step 4: Start Frontend**
+
+```bash
+npm start
+```
+
+Runs on:
+
+```
+http://localhost:3000
+```
+
+---
+
+## **4.2 Database Setup (MongoDB)**
+
+### **Option 1: Local MongoDB**
+
+#### Install MongoDB and run:
+
+```
+mongodb://localhost:27017/restaurant
+```
+
+---
+
+### **Option 2: MongoDB Atlas (Cloud)**
+
+* Create cluster
+* Get connection string
+* Add to `.env` file
+
+```env
+MONGO_URI=your_connection_string
+```
+
+---
+
+### **Backend Connection Example:**
+
+```js
+mongoose.connect(process.env.MONGO_URI)
+```
+
+---
+
+## **Expected Outcome:**
+
+* Fully working local system
+* Backend connected to database
+* Real-time data storage
+
+---
+
+# **5. Conclusion**
+
+The identified issues highlight important gaps in system configuration, documentation, and deployment. By implementing the proposed solutions:
+
+* Image rendering will function correctly
+* A complete project report can be generated for academic purposes
+* The system can be successfully run and tested locally
+
+These improvements will enhance both the technical quality and usability of the Smart Restaurant Ordering System, making it more robust, maintainable, and suitable for real-world applications.
+
+---

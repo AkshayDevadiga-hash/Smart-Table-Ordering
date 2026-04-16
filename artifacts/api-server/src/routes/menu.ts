@@ -17,7 +17,7 @@ import {
 } from "@workspace/api-zod";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.resolve(__dirname, "..", "..", "uploads");
+const uploadsDir = path.resolve(__dirname, "..", "uploads");
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadsDir),
