@@ -6,9 +6,41 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 
 ## Architecture
 
-- **Frontend**: Static HTML/CSS/JavaScript at `/` — customer menu, order tracking, kitchen dashboard, admin panel
-- **Backend**: Express 5 API server at `/api`
-- **Database**: PostgreSQL + Drizzle ORM
+```
+project-root/
+├── backend/              # Express 5 API server
+│   ├── src/
+│   │   ├── controllers/  # Request handlers
+│   │   ├── services/     # Business logic + DB operations
+│   │   ├── routes/       # Thin Express routers
+│   │   ├── middleware/   # Auth middleware (JWT)
+│   │   ├── db/           # Drizzle schema + connection
+│   │   ├── validation/   # Zod schemas
+│   │   ├── lib/          # Logger
+│   │   ├── app.ts        # Express app
+│   │   └── index.ts      # Server entry
+│   ├── uploads/          # Uploaded images (served at /uploads)
+│   ├── build.mjs         # esbuild bundler
+│   ├── drizzle.config.ts
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── frontend/             # Vanilla HTML/JS static site
+│   ├── src/
+│   │   ├── pages/        # HTML files (served as routes)
+│   │   ├── api/          # Page-specific JS (menu.js, admin.js, etc.)
+│   │   └── components/   # Shared JS utilities (auth.js)
+│   ├── public/           # Static assets (style.css, favicon, images)
+│   ├── server.js         # Node.js static file server + API proxy
+│   ├── package.json
+│   └── .env.example
+│
+├── scripts/              # Internal workspace scripts
+├── pnpm-workspace.yaml
+├── package.json
+├── tsconfig.base.json
+└── tsconfig.json
+```
 
 ## Stack
 
@@ -20,7 +52,6 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 - **API framework**: Express 5
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
 - **QR codes**: `qrcode` npm package
 - **Auth**: `jsonwebtoken` (JWT)
 - **File upload**: `multer`
@@ -59,47 +90,46 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 ## Development Setup
 
 ### On Replit
-- The workflow `Start application` runs both services via:
-  - `PORT=8080 pnpm --filter @workspace/api-server run dev`
-  - `PORT=18641 pnpm --filter @workspace/restaurant run dev`
+
+The workflow `Start application` runs both services:
+```
+PORT=8080 pnpm --filter @workspace/backend run dev & PORT=18641 pnpm --filter @workspace/frontend run dev
+```
 
 ### Locally (or on Render/Railway/Vercel)
+
 1. `pnpm install`
-2. Copy env examples and fill in values:
-   - `cp artifacts/api-server/.env.example artifacts/api-server/.env`
-   - `cp artifacts/restaurant/.env.example artifacts/restaurant/.env`
-3. `pnpm run dev` — starts both services in parallel
+2. Copy and fill in env files:
+   ```
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   ```
+3. Push DB schema: `pnpm --filter @workspace/backend run db:push`
+4. `pnpm run dev` — starts both services in parallel
 
 Default ports without env vars:
-- API server: `5000` (set `PORT` in `artifacts/api-server/.env`)
-- Frontend: `3000` (set `PORT` in `artifacts/restaurant/.env`)
+- Backend: `5000` (set `PORT` in `backend/.env`)
+- Frontend: `3000` (set `PORT` in `frontend/.env`)
 
 ### Environment Variables
-**API server** (`artifacts/api-server/.env`):
+
+**Backend** (`backend/.env`):
 - `PORT` — port to listen on (default `5000`)
 - `DATABASE_URL` — PostgreSQL connection string (required)
 - `JWT_SECRET` — JWT signing secret
 - `ADMIN_PASSWORD` / `KITCHEN_PASSWORD` — login passwords
 - `CLIENT_URL` — frontend origin for CORS (default `http://localhost:3000`)
 
-**Frontend** (`artifacts/restaurant/.env`):
+**Frontend** (`frontend/.env`):
 - `PORT` — port to listen on (default `3000`)
-- `API_URL` — full URL of the API server (default `http://localhost:5000`)
-
-### Other notes
-- The frontend proxies `/api/*` and `/uploads/*` requests to the API server via `API_URL`.
-- Frontend files live under `artifacts/restaurant/public/`:
-  - HTML pages: `index.html`, `menu.html`, `order.html`, `kitchen.html`, `kitchen-login.html`, `admin.html`, `admin-login.html`, `admin-menu.html`, `admin-tables.html`, `admin-reports.html`
-  - CSS: `style.css` (includes admin sidebar layout + mobile nav styles)
-  - JavaScript: `public/js/*.js`, `public/js/auth.js` (shared auth utilities)
-- Uploaded images stored at `artifacts/api-server/uploads/`, served at `/uploads/`
+- `API_URL` — full URL of the backend API (default `http://localhost:8080`)
 
 ## Key Features
 
 - **JWT Authentication**: Separate login for admin and kitchen staff
 - **Admin Sidebar Navigation**: Vertical sidebar on desktop, horizontal tab bar on mobile
 - **Image Upload**: Admin can upload images for menu items; customers see them on the menu
-- **Unified Billing**: New orders from the same table are merged into one active order instead of creating duplicates
+- **Unified Billing**: New orders from the same table are merged into one active order
 - **QR code per table**: Customers scan to access menu
 - **Cart with GST**: Real-time subtotal + 18% GST calculation with browser persistence
 - **Live order tracking**: Polls every 5 seconds
@@ -111,16 +141,19 @@ Default ports without env vars:
 - **Menu CRUD**: With availability toggle, veg/non-veg markers, image upload
 - **Downloadable QR codes** as PNG files
 
-## Deployment Setup
-
-- Production build command builds the API server and runs the no-op frontend build.
-- Production run command starts the API server on internal port `8080` and the restaurant frontend on the incoming app port.
-- The incoming/public port is `18641`; do not use `8080` as the public port because that is only for the internal API proxy.
-
 ## Key Commands
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+```bash
+pnpm run typecheck                              # full typecheck
+pnpm run build                                  # typecheck + build all
+pnpm --filter @workspace/backend run db:push    # push DB schema changes
+pnpm --filter @workspace/backend run build      # build backend only
+pnpm --filter @workspace/frontend run dev       # run frontend locally
+```
+
+## Deployment Notes
+
+- Backend: build with `pnpm --filter @workspace/backend run build`, run with `node backend/dist/index.mjs`
+- Frontend: no build step — just `node frontend/server.js`
+- The frontend proxies `/api/*` and `/uploads/*` to the backend via `API_URL`
+- Uploaded images stored in `backend/uploads/`

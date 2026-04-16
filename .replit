@@ -24,13 +24,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=8080 pnpm --filter @workspace/api-server run dev & PORT=18641 pnpm --filter @workspace/restaurant run dev"
-waitForPort = 18641
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=8080 pnpm --filter @workspace/backend run dev & PORT=18641 pnpm --filter @workspace/frontend run dev"
+waitForPort = 18641
 
 [agent]
 stack = "PNPM_WORKSPACE"
