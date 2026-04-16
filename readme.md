@@ -28,7 +28,7 @@ The Smart Restaurant Ordering System is a QR-code-based digital ordering platfor
 
 ### Authentication
 - **Method:** JWT (JSON Web Tokens) — stored in cookies
-- **Roles:** `admin` and `kitchen` — each has its own login page and protected routes
+- **Role:** `admin`  —  it has login page and protected routes
 - **No customer login** — customers access the menu via a QR code URL containing their table ID
 
 ### Image Uploads
