@@ -6,9 +6,10 @@
   <title>Menu Management — TableOrder</title>
   <link rel="stylesheet" href="/style.css" />
   <style>
-    .menu-mgt-content { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
     .item-row { display: flex; align-items: center; gap: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.875rem 1rem; margin-bottom: 0.5rem; }
     .item-row.unavailable { opacity: 0.55; }
+    .item-thumb { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: var(--primary-light); }
+    .item-thumb-placeholder { width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
     .item-row-info { flex: 1; min-width: 0; }
     .item-row-name { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.9rem; }
     .item-row-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -24,27 +25,53 @@
     .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
     .checkboxes { display: flex; gap: 1.5rem; }
     .unavail-tag { font-size: 0.7rem; background: #f3f4f6; color: #6b7280; padding: 0.15rem 0.5rem; border-radius: 999px; }
+    .img-preview { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); display: block; }
+    .img-upload-wrap { display: flex; align-items: center; gap: 1rem; }
+    .upload-btn { padding: 0.375rem 0.875rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-size: 0.8rem; cursor: pointer; }
+    .upload-btn:hover { background: var(--primary-light); }
+    .upload-status { font-size: 0.75rem; color: var(--text-muted); }
   </style>
 </head>
 <body>
-  <header class="page-header">
-    <div class="page-header-inner">
-      <div class="page-header-title">
-        <a href="/admin" class="back-btn">←</a>
-        <span>🍛</span>
-        Menu Management
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-icon">🍽️</span>
+        <span class="sidebar-brand-name">TableOrder</span>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="openAdd()">+ Add Item</button>
-    </div>
-  </header>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+        <a href="/admin/menu" class="sidebar-link active"><span class="sidebar-link-icon">🍛</span>Menu</a>
+        <a href="/admin/tables" class="sidebar-link"><span class="sidebar-link-icon">🔲</span>Tables</a>
+        <a href="/admin/reports" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
+        <a href="/kitchen" class="sidebar-link"><span class="sidebar-link-icon">👨‍🍳</span>Kitchen</a>
+      </nav>
+      <button class="sidebar-logout" onclick="logout('/admin/login')">↩ Sign Out</button>
+    </aside>
 
-  <div class="menu-mgt-content">
-    <div class="tab-bar" id="catFilter" style="margin-bottom:1.5rem"></div>
-    <div id="menuBody">
-      <div class="skeleton" style="height:64px;margin-bottom:0.5rem;border-radius:12px"></div>
-      <div class="skeleton" style="height:64px;margin-bottom:0.5rem;border-radius:12px"></div>
-      <div class="skeleton" style="height:64px;border-radius:12px"></div>
+    <div class="admin-mobile-nav">
+      <a href="/admin" class="mobile-nav-link"><span>📊</span><small>Dashboard</small></a>
+      <a href="/admin/menu" class="mobile-nav-link active"><span>🍛</span><small>Menu</small></a>
+      <a href="/admin/tables" class="mobile-nav-link"><span>🔲</span><small>Tables</small></a>
+      <a href="/admin/reports" class="mobile-nav-link"><span>📈</span><small>Reports</small></a>
+      <a href="/kitchen" class="mobile-nav-link"><span>👨‍🍳</span><small>Kitchen</small></a>
     </div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <h1 class="admin-page-title">Menu Management</h1>
+        <button class="btn btn-primary btn-sm" onclick="openAdd()">+ Add Item</button>
+      </div>
+
+      <div class="admin-content">
+        <div class="tab-bar" id="catFilter" style="margin-bottom:1.5rem"></div>
+        <div id="menuBody">
+          <div class="skeleton" style="height:64px;margin-bottom:0.5rem;border-radius:12px"></div>
+          <div class="skeleton" style="height:64px;margin-bottom:0.5rem;border-radius:12px"></div>
+          <div class="skeleton" style="height:64px;border-radius:12px"></div>
+        </div>
+      </div>
+    </main>
   </div>
 
   <!-- Form Modal -->
@@ -68,9 +95,21 @@
             <label class="form-label" for="fDesc">Description</label>
             <textarea class="form-textarea" id="fDesc" placeholder="Optional description"></textarea>
           </div>
+          <div class="form-group">
+            <label class="form-label">Item Image</label>
+            <div class="img-upload-wrap">
+              <img id="imgPreview" class="img-preview" src="" alt="Preview" style="display:none" />
+              <div>
+                <label class="upload-btn" for="fImageFile">📷 Choose Image</label>
+                <input type="file" id="fImageFile" accept="image/*" style="display:none" onchange="handleImageSelect()" />
+                <input type="hidden" id="fImageUrl" />
+                <div class="upload-status" id="uploadStatus"></div>
+              </div>
+            </div>
+          </div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="fPrice">Price ($)</label>
+              <label class="form-label" for="fPrice">Price (₹)</label>
               <input class="form-input" id="fPrice" type="number" step="0.01" min="0" placeholder="0.00" required />
             </div>
             <div class="form-group">
@@ -92,6 +131,8 @@
   </div>
 
   <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/auth.js"></script>
+  <script>requireAdminAuth();</script>
   <script src="/js/admin-menu.js"></script>
 </body>
 </html>

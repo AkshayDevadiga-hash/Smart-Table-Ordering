@@ -1,5 +1,8 @@
 import { Router, type IRouter } from "express";
 import { eq, asc } from "drizzle-orm";
+import path from "path";
+import { fileURLToPath } from "url";
+import multer from "multer";
 import { db, menuCategoriesTable, menuItemsTable } from "@workspace/db";
 import {
   CreateMenuCategoryBody,
@@ -13,7 +16,36 @@ import {
   DeleteMenuItemParams,
 } from "@workspace/api-zod";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadsDir = path.resolve(__dirname, "..", "..", "uploads");
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const name = Date.now() + "-" + Math.round(Math.random() * 1e6) + ext;
+    cb(null, name);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed"));
+  },
+});
+
 const router: IRouter = Router();
+
+router.post("/menu/upload", upload.single("image"), (req, res): void => {
+  if (!req.file) {
+    res.status(400).json({ error: "No image file provided" });
+    return;
+  }
+  res.json({ url: `/uploads/${req.file.filename}` });
+});
 
 const DEFAULT_CATEGORIES = [
   {

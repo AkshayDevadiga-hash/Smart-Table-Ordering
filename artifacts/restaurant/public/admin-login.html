@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — TableOrder</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+    .login-card { width: 100%; max-width: 380px; padding: 2.5rem 2rem; }
+    .login-icon { width: 56px; height: 56px; background: var(--primary-light); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.5rem; }
+    .login-title { text-align: center; font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .login-sub { text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-bottom: 2rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1rem; }
+    .error-msg { color: var(--destructive); font-size: 0.8rem; text-align: center; min-height: 1.25rem; }
+  </style>
+</head>
+<body>
+  <div class="card login-card">
+    <div class="login-icon">🧑‍💼</div>
+    <h1 class="login-title">Admin Login</h1>
+    <p class="login-sub">Sign in to access the admin dashboard</p>
+    <form id="loginForm" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" id="username" type="text" placeholder="admin" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" id="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <p class="error-msg" id="errorMsg"></p>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem" id="loginBtn">Sign In</button>
+    </form>
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.8rem;color:var(--text-muted)">
+      <a href="/" style="color:var(--primary)">← Back to home</a>
+    </p>
+  </div>
+  <script src="/js/auth.js"></script>
+  <script>
+    if (getToken() && getRole() === 'admin' && isTokenValid(getToken())) {
+      window.location.replace('/admin');
+    }
+    async function doLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('errorMsg');
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      err.textContent = '';
+      try {
+        const data = await login(
+          document.getElementById('username').value,
+          document.getElementById('password').value
+        );
+        if (data.role !== 'admin') {
+          err.textContent = 'This account does not have admin access.';
+          clearAuth();
+          return;
+        }
+        window.location.replace('/admin');
+      } catch (ex) {
+        err.textContent = ex.message || 'Invalid credentials';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    }
+  </script>
+</body>
+</html>

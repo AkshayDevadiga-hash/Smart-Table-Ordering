@@ -2,6 +2,7 @@ let categories = [];
 let menuItems = [];
 let editingId = null;
 let activeFilter = null;
+let pendingImageUrl = null;
 
 function money(value) {
   const amount = Number(value);
@@ -78,6 +79,9 @@ function renderMenu() {
         const row = document.createElement('div');
         row.className = 'item-row' + (!item.isAvailable ? ' unavailable' : '');
         row.innerHTML = `
+          ${item.imageUrl
+            ? `<img class="item-thumb" src="${item.imageUrl}" alt="${item.name}" loading="lazy" />`
+            : `<div class="item-thumb-placeholder">🍽️</div>`}
           <div class="item-row-info">
             <div class="item-row-name">
               <span class="${item.isVeg ? 'veg-dot' : 'nonveg-dot'}"></span>
@@ -121,6 +125,42 @@ function populateCategorySelect(selectedId) {
   });
 }
 
+function resetImageFields() {
+  pendingImageUrl = null;
+  document.getElementById('fImageUrl').value = '';
+  document.getElementById('fImageFile').value = '';
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('uploadStatus').textContent = '';
+}
+
+function setImagePreview(url) {
+  const preview = document.getElementById('imgPreview');
+  preview.src = url;
+  preview.style.display = 'block';
+}
+
+async function handleImageSelect() {
+  const file = document.getElementById('fImageFile').files[0];
+  if (!file) return;
+  const status = document.getElementById('uploadStatus');
+  status.textContent = 'Uploading…';
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch('/api/menu/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    pendingImageUrl = data.url;
+    document.getElementById('fImageUrl').value = data.url;
+    setImagePreview(data.url);
+    status.textContent = '✓ Uploaded';
+  } catch {
+    status.textContent = '✗ Upload failed';
+    showToast('Image upload failed', true);
+  }
+}
+
 function openAdd() {
   if (!categories.length) {
     showToast('No categories found. Please refresh and try again.', true);
@@ -131,7 +171,7 @@ function openAdd() {
   document.getElementById('modalTitle').textContent = 'Add Menu Item';
   document.getElementById('submitBtn').textContent = 'Add Item';
   document.getElementById('itemForm').reset();
-  // Set defaults
+  resetImageFields();
   populateCategorySelect(categories[0]?.id ?? null);
   document.getElementById('fAvailable').checked = true;
   document.getElementById('fSort').value = menuItems.length + 1;
@@ -144,6 +184,7 @@ function openEdit(itemId) {
   editingId = itemId;
   document.getElementById('modalTitle').textContent = 'Edit Item';
   document.getElementById('submitBtn').textContent = 'Save Changes';
+  resetImageFields();
   populateCategorySelect(item.categoryId);
   document.getElementById('fName').value = item.name;
   document.getElementById('fDesc').value = item.description || '';
@@ -151,6 +192,12 @@ function openEdit(itemId) {
   document.getElementById('fSort').value = item.sortOrder;
   document.getElementById('fVeg').checked = item.isVeg;
   document.getElementById('fAvailable').checked = item.isAvailable;
+  if (item.imageUrl) {
+    pendingImageUrl = item.imageUrl;
+    document.getElementById('fImageUrl').value = item.imageUrl;
+    setImagePreview(item.imageUrl);
+    document.getElementById('uploadStatus').textContent = 'Current image';
+  }
   document.getElementById('formModal').classList.remove('hidden');
 }
 
@@ -168,11 +215,13 @@ async function submitForm(e) {
     btn.disabled = false;
     return;
   }
+  const imageUrl = document.getElementById('fImageUrl').value.trim() || null;
   const data = {
     categoryId,
     name: document.getElementById('fName').value.trim(),
     description: document.getElementById('fDesc').value.trim() || null,
     price: parseFloat(document.getElementById('fPrice').value).toFixed(2),
+    imageUrl,
     sortOrder: parseInt(document.getElementById('fSort').value, 10) || 0,
     isVeg: document.getElementById('fVeg').checked,
     isAvailable: document.getElementById('fAvailable').checked,
@@ -202,7 +251,7 @@ async function toggleAvail(itemId) {
       method: 'PUT',
       body: JSON.stringify({
         categoryId: item.categoryId, name: item.name, description: item.description || null,
-        price: item.price, sortOrder: item.sortOrder, isVeg: item.isVeg, isAvailable: !item.isAvailable,
+        price: item.price, imageUrl: item.imageUrl || null, sortOrder: item.sortOrder, isVeg: item.isVeg, isAvailable: !item.isAvailable,
       }),
     });
     await load();

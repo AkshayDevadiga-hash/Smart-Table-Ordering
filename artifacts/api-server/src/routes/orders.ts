@@ -118,7 +118,7 @@ router.post("/orders", async (req, res): Promise<void> => {
   const menuItems = await db.select().from(menuItemsTable).where(inArray(menuItemsTable.id, menuItemIds));
   const menuItemMap = new Map(menuItems.map(m => [m.id, m]));
 
-  let subtotal = 0;
+  let newSubtotal = 0;
   const orderItemsData = [];
   for (const item of items) {
     const quantity = Number(item.quantity);
@@ -140,7 +140,7 @@ router.post("/orders", async (req, res): Promise<void> => {
       res.status(400).json({ error: `Menu item ${menuItem.name} has an invalid price` });
       return;
     }
-    subtotal += unitPrice * quantity;
+    newSubtotal += unitPrice * quantity;
     orderItemsData.push({
       menuItemId: item.menuItemId,
       menuItemName: menuItem.name,
@@ -150,14 +150,57 @@ router.post("/orders", async (req, res): Promise<void> => {
     });
   }
 
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax;
+  // Check for an existing active (unpaid, not completed/cancelled) order for this table
+  const [existingOrder] = await db
+    .select()
+    .from(ordersTable)
+    .where(sql`table_id = ${tableId} and payment_status = 'pending' and status not in ('completed', 'cancelled')`)
+    .orderBy(desc(ordersTable.createdAt))
+    .limit(1);
+
+  if (existingOrder) {
+    // Append items to the existing order and update totals
+    const insertedItems = await db.insert(orderItemsTable).values(
+      orderItemsData.map(item => ({ ...item, orderId: existingOrder.id }))
+    ).returning();
+
+    const prevSubtotal = Number(existingOrder.subtotal);
+    const mergedSubtotal = prevSubtotal + newSubtotal;
+    const mergedTax = mergedSubtotal * TAX_RATE;
+    const mergedTotal = mergedSubtotal + mergedTax;
+
+    const [updatedOrder] = await db
+      .update(ordersTable)
+      .set({
+        subtotal: mergedSubtotal.toFixed(2),
+        tax: mergedTax.toFixed(2),
+        total: mergedTotal.toFixed(2),
+        updatedAt: new Date(),
+        ...(specialInstructions ? { specialInstructions } : {}),
+      })
+      .where(eq(ordersTable.id, existingOrder.id))
+      .returning();
+
+    const allItems = await db.select().from(orderItemsTable).where(eq(orderItemsTable.orderId, existingOrder.id));
+
+    res.status(201).json({
+      ...updatedOrder,
+      tableNumber: table.tableNumber,
+      items: allItems,
+      merged: true,
+    });
+    return;
+  }
+
+  // No existing order — create a new one
+  const tax = newSubtotal * TAX_RATE;
+  const total = newSubtotal + tax;
 
   const [order] = await db.insert(ordersTable).values({
     tableId,
     status: "pending",
     paymentStatus: "pending",
-    subtotal: subtotal.toFixed(2),
+    subtotal: newSubtotal.toFixed(2),
     tax: tax.toFixed(2),
     total: total.toFixed(2),
     specialInstructions: specialInstructions ?? null,

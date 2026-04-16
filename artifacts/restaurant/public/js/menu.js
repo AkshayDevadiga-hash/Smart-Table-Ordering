@@ -122,6 +122,7 @@ function renderMenu() {
       const div = document.createElement('div');
       div.className = 'menu-item' + (!item.isAvailable ? ' unavailable' : '');
       div.innerHTML = `
+        ${item.imageUrl ? `<img class="menu-item-img" src="${item.imageUrl}" alt="${item.name}" loading="lazy" />` : ''}
         <div class="menu-item-info">
           <div class="menu-item-name-row">
             <span class="${item.isVeg ? 'veg-dot' : 'nonveg-dot'}"></span>

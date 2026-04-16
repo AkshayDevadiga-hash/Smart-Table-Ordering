@@ -6,7 +6,6 @@
   <title>Tables & QR Codes — TableOrder</title>
   <link rel="stylesheet" href="/style.css" />
   <style>
-    .tables-content { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
     .tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
     .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .table-card-top { display: flex; align-items: flex-start; justify-content: space-between; width: 100%; }
@@ -21,28 +20,49 @@
   </style>
 </head>
 <body>
-  <header class="page-header">
-    <div class="page-header-inner">
-      <div class="page-header-title">
-        <a href="/admin" class="back-btn">←</a>
-        <span>🔲</span>
-        Tables & QR Codes
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-icon">🍽️</span>
+        <span class="sidebar-brand-name">TableOrder</span>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="openAddTable()">+ Add Table</button>
-    </div>
-  </header>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+        <a href="/admin/menu" class="sidebar-link"><span class="sidebar-link-icon">🍛</span>Menu</a>
+        <a href="/admin/tables" class="sidebar-link active"><span class="sidebar-link-icon">🔲</span>Tables</a>
+        <a href="/admin/reports" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
+        <a href="/kitchen" class="sidebar-link"><span class="sidebar-link-icon">👨‍🍳</span>Kitchen</a>
+      </nav>
+      <button class="sidebar-logout" onclick="logout('/admin/login')">↩ Sign Out</button>
+    </aside>
 
-  <div class="tables-content">
-    <div class="stats-grid" style="margin-bottom:1.5rem" id="tableSummary">
-      <div class="card skeleton" style="height:72px"></div>
-      <div class="card skeleton" style="height:72px"></div>
-      <div class="card skeleton" style="height:72px"></div>
+    <div class="admin-mobile-nav">
+      <a href="/admin" class="mobile-nav-link"><span>📊</span><small>Dashboard</small></a>
+      <a href="/admin/menu" class="mobile-nav-link"><span>🍛</span><small>Menu</small></a>
+      <a href="/admin/tables" class="mobile-nav-link active"><span>🔲</span><small>Tables</small></a>
+      <a href="/admin/reports" class="mobile-nav-link"><span>📈</span><small>Reports</small></a>
+      <a href="/kitchen" class="mobile-nav-link"><span>👨‍🍳</span><small>Kitchen</small></a>
     </div>
-    <div class="tables-grid" id="tablesGrid">
-      <div class="skeleton" style="height:280px;border-radius:16px"></div>
-      <div class="skeleton" style="height:280px;border-radius:16px"></div>
-      <div class="skeleton" style="height:280px;border-radius:16px"></div>
-    </div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <h1 class="admin-page-title">Tables & QR Codes</h1>
+        <button class="btn btn-primary btn-sm" onclick="openAddTable()">+ Add Table</button>
+      </div>
+
+      <div class="admin-content">
+        <div class="stats-grid" style="margin-bottom:1.5rem" id="tableSummary">
+          <div class="card skeleton" style="height:72px"></div>
+          <div class="card skeleton" style="height:72px"></div>
+          <div class="card skeleton" style="height:72px"></div>
+        </div>
+        <div class="tables-grid" id="tablesGrid">
+          <div class="skeleton" style="height:280px;border-radius:16px"></div>
+          <div class="skeleton" style="height:280px;border-radius:16px"></div>
+          <div class="skeleton" style="height:280px;border-radius:16px"></div>
+        </div>
+      </div>
+    </main>
   </div>
 
   <!-- Add Table Modal -->
@@ -72,6 +92,8 @@
   </div>
 
   <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/auth.js"></script>
+  <script>requireAdminAuth();</script>
   <script src="/js/admin-tables.js"></script>
 </body>
 </html>

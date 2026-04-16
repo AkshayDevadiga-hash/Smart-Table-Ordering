@@ -43,9 +43,12 @@
         <span>👨‍🍳</span>
         Kitchen Dashboard
       </div>
-      <div class="refresh-indicator">
-        <div class="live-dot"></div>
-        <span>Live</span>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="refresh-indicator">
+          <div class="live-dot"></div>
+          <span>Live</span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="logout('/kitchen/login')">Sign Out</button>
       </div>
     </div>
   </header>
@@ -55,6 +58,8 @@
   </div>
 
   <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/auth.js"></script>
+  <script>requireKitchenAuth();</script>
   <script src="/js/kitchen.js"></script>
 </body>
 </html>

@@ -22,22 +22,36 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **QR codes**: `qrcode` npm package
+- **Auth**: `jsonwebtoken` (JWT)
+- **File upload**: `multer`
 
 ## Pages
 
 - `/` — Landing page with system overview
-- `/menu/:tableId` — Customer menu (QR code destination); browse + order
+- `/menu/:tableId` — Customer menu (QR code destination); browse + order; images displayed
 - `/order/:orderId` — Order tracking with live status polling
-- `/kitchen` — Kitchen dashboard; live order queue with status updates
-- `/admin` — Admin dashboard with revenue stats
-- `/admin/menu` — Menu item management (CRUD)
-- `/admin/tables` — Table management with QR code display/download
-- `/admin/reports` — Paid income reports by day, week, month, or year
+- `/kitchen/login` — Kitchen staff login page
+- `/kitchen` — Kitchen dashboard; live order queue with status updates (auth required)
+- `/admin/login` — Admin login page
+- `/admin` — Admin dashboard with revenue stats and sidebar nav (auth required)
+- `/admin/menu` — Menu item management with image upload (auth required)
+- `/admin/tables` — Table management with QR code display/download (auth required)
+- `/admin/reports` — Paid income reports by day, week, month, or year (auth required)
+
+## Authentication
+
+- JWT-based authentication for admin and kitchen
+- Default credentials:
+  - Admin: username `admin`, password `admin1234`
+  - Kitchen: username `kitchen`, password `kitchen1234`
+- Override via env vars: `ADMIN_PASSWORD`, `KITCHEN_PASSWORD`, `JWT_SECRET`
+- Tokens stored in localStorage, expire after 24h
+- All admin and kitchen pages redirect to login if unauthenticated
 
 ## Database Schema
 
 - `menu_categories` — Menu categories (Starters, Mains, Desserts, Beverages)
-- `menu_items` — Menu items with price, veg flag, availability
+- `menu_items` — Menu items with price, veg flag, availability, and optional `image_url`
 - `restaurant_tables` — Tables with QR code URLs
 - `orders` — Customer orders with order status, payment status, subtotal, GST, and total
 - `order_items` — Individual items in each order
@@ -47,14 +61,30 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 - The Replit workflow named `Start application` runs both services:
   - API server on port `8080`
   - Restaurant frontend on port `18641`
-- The frontend proxies `/api/*` requests to the API server.
+- The frontend proxies `/api/*` and `/uploads/*` requests to the API server.
 - The development database is provisioned and the Drizzle schema has been pushed.
-- Starter data has been seeded for 4 menu categories, 9 menu items, and 5 restaurant tables.
 - Frontend files live under `artifacts/restaurant/public/`:
-  - HTML pages: `index.html`, `menu.html`, `order.html`, `kitchen.html`, `admin.html`, `admin-menu.html`, `admin-tables.html`
-  - CSS: `style.css`
-  - JavaScript: `public/js/*.js`
-- The old React/Vite frontend source has been removed from `artifacts/restaurant`.
+  - HTML pages: `index.html`, `menu.html`, `order.html`, `kitchen.html`, `kitchen-login.html`, `admin.html`, `admin-login.html`, `admin-menu.html`, `admin-tables.html`, `admin-reports.html`
+  - CSS: `style.css` (includes admin sidebar layout + mobile nav styles)
+  - JavaScript: `public/js/*.js`, `public/js/auth.js` (shared auth utilities)
+- Uploaded images stored at `artifacts/api-server/uploads/`, served at `/uploads/`
+
+## Key Features
+
+- **JWT Authentication**: Separate login for admin and kitchen staff
+- **Admin Sidebar Navigation**: Vertical sidebar on desktop, horizontal tab bar on mobile
+- **Image Upload**: Admin can upload images for menu items; customers see them on the menu
+- **Unified Billing**: New orders from the same table are merged into one active order instead of creating duplicates
+- **QR code per table**: Customers scan to access menu
+- **Cart with GST**: Real-time subtotal + 18% GST calculation with browser persistence
+- **Live order tracking**: Polls every 5 seconds
+- **Unpaid order resume banner**: Shows on customer menu for active table bills
+- **Kitchen kanban board**: Pending → Received → Preparing → Ready → Delivered
+- **Admin stats**: Today's orders, revenue, active orders, table occupancy
+- **Paid-only income reports**: Daily, weekly, monthly, yearly
+- **Popular items ranking**
+- **Menu CRUD**: With availability toggle, veg/non-veg markers, image upload
+- **Downloadable QR codes** as PNG files
 
 ## Deployment Setup
 
@@ -69,16 +99,3 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
-
-## Features
-
-- QR code per table, customers scan to access menu
-- Cart with real-time subtotal + 18% GST calculation and browser persistence
-- Live order tracking (polls every 5 seconds)
-- Unpaid order resume banner on the customer menu for active table bills
-- Kitchen kanban board: Pending → Received → Preparing → Ready → Delivered
-- Admin stats: today's orders, revenue, active orders, table occupancy
-- Paid-only income reports
-- Popular items ranking
-- Menu CRUD with availability toggle and veg/non-veg markers
-- Downloadable QR codes as PNG files

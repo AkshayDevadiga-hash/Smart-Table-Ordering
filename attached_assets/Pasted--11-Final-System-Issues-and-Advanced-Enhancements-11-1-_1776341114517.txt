@@ -1,0 +1,291 @@
+# **11. Final System Issues and Advanced Enhancements**
+
+## **11.1 Overview**
+
+After further testing and improvements, a few critical issues remain in the Smart Restaurant Ordering System. These issues are related to authentication, UI design, navigation structure, and billing logic. This section provides a detailed explanation of each issue along with proper solutions to make the system production-ready.
+
+---
+
+# **11.2 Issue 1: Missing Login System for Admin and Kitchen**
+
+## **Problem Description:**
+
+Currently, there is no authentication mechanism for:
+
+* Admin Dashboard
+* Kitchen Dashboard
+
+This allows any user with the URL to access and modify system data.
+
+---
+
+## **Proposed Solution: Authentication System**
+
+### **Implementation Details:**
+
+#### **1. Create Login Pages**
+
+* `/admin/login`
+* `/kitchen/login`
+
+#### **2. Login Fields:**
+
+* Username
+* Password
+
+---
+
+### **3. Backend API:**
+
+```id="a1b2c3"
+POST /api/auth/login
+```
+
+### **Request:**
+
+```json id="d4e5f6"
+{
+  "username": "admin",
+  "password": "1234"
+}
+```
+
+### **Response:**
+
+```json id="g7h8i9"
+{
+  "token": "jwt_token_here",
+  "role": "admin"
+}
+```
+
+---
+
+### **4. Security Implementation:**
+
+* Use JWT tokens
+* Store token in localStorage
+* Protect routes using middleware
+
+---
+
+### **Outcome:**
+
+✔ Secure system
+✔ Only authorized access
+
+---
+
+# **11.3 Issue 2: Image Upload and UI Redesign**
+
+## **Problem Description:**
+
+* No option to upload images while adding menu items
+* Customer UI does not display images
+
+---
+
+## **Proposed Solution:**
+
+### **1. Add Image Upload Feature**
+
+#### **Backend:**
+
+* Use file upload middleware (e.g., Multer)
+* Store image URL in database
+
+```id="j1k2l3"
+Menu:
+  id
+  name
+  price
+  image_url
+```
+
+---
+
+### **2. Update Admin UI**
+
+* Add file input field
+* Preview image before upload
+
+---
+
+### **3. Customer UI Redesign**
+
+#### **Menu Card Layout:**
+
+* Image (left or top)
+* Item name
+* Price
+* Add button
+
+---
+
+### **Outcome:**
+
+✔ Attractive UI
+✔ Better user engagement
+
+---
+
+# **11.4 Issue 3: Poor Navigation Structure in Admin Dashboard**
+
+## **Problem Description:**
+
+* Features like Reports, Menu, etc. are inside a “Management box”
+* Hard to find
+* Not user-friendly
+
+---
+
+## **Proposed Solution: Proper Navigation Layout**
+
+### **1. Desktop View → Vertical Sidebar**
+
+#### **Sidebar Menu:**
+
+* Dashboard
+* Orders
+* Menu
+* Reports
+* Tables
+* Kitchen
+
+---
+
+### **2. Mobile View → Top Horizontal Bar**
+
+#### **Top Navigation:**
+
+* Scrollable tabs
+* Icons + labels
+
+---
+
+### **3. Benefits:**
+
+* Easy navigation
+* Professional UI
+* No need to search options
+
+---
+
+# **11.5 Issue 4: Incorrect Payment Calculation Logic**
+
+## **Problem Description:**
+
+* Multiple orders are treated separately
+* If user orders again without paying:
+
+  * Previous bill not included
+  * Payment becomes inconsistent
+
+---
+
+## **Root Cause:**
+
+* New order created every time
+* No aggregation of unpaid orders
+
+---
+
+## **Proposed Solution: Unified Billing System**
+
+### **Key Idea:**
+
+👉 Maintain **one active order per table/session**
+
+---
+
+## **Implementation Logic:**
+
+### **1. Backend Check**
+
+```id="m4n5o6"
+if (existing_order && status != "paid") {
+   use_existing_order;
+} else {
+   create_new_order;
+}
+```
+
+---
+
+### **2. Merge Orders**
+
+* Add new items to same order
+* Do not create multiple unpaid orders
+
+---
+
+### **3. Calculate Total Amount**
+
+```id="p7q8r9"
+Total = sum(all items in order)
+```
+
+---
+
+### **4. API Update**
+
+```id="s1t2u3"
+GET /api/order/current
+```
+
+Returns:
+
+* All items
+* Total amount
+* Payment status
+
+---
+
+## **Frontend Fix:**
+
+* Always fetch current order
+* Display:
+
+  * Previous items
+  * New items
+  * Combined total
+
+---
+
+## **UI Improvement:**
+
+### Add Section:
+
+**“Total Payable Amount”**
+
+* Includes all unpaid items
+* Visible at top or bottom
+
+---
+
+## **Outcome:**
+
+✔ Single bill per table
+✔ No confusion
+✔ Accurate payment system
+
+---
+
+# **11.6 Final System Improvements Summary**
+
+| Issue           | Solution                    |
+| --------------- | --------------------------- |
+| No login        | Add authentication with JWT |
+| No images       | Add upload + display        |
+| Poor navigation | Sidebar + top bar           |
+| Payment issue   | Single active order system  |
+
+---
+
+# **11.7 Conclusion**
+
+The final set of issues mainly focuses on improving system security, usability, and billing accuracy. By implementing authentication, enhancing UI design, restructuring navigation, and fixing the payment logic, the Smart Restaurant Ordering System becomes more robust, user-friendly, and aligned with real-world restaurant operations.
+
+These enhancements significantly elevate the system from a basic prototype to a near production-ready solution, ensuring reliability, scalability, and a professional user experience.
+
+---

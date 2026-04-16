@@ -23,7 +23,9 @@ function resolveHtmlFile(pathname) {
   if (pathname === "/" || pathname === "") return "index.html";
   if (pathname.startsWith("/menu")) return "menu.html";
   if (pathname.startsWith("/order")) return "order.html";
+  if (pathname === "/kitchen/login") return "kitchen-login.html";
   if (pathname === "/kitchen") return "kitchen.html";
+  if (pathname === "/admin/login") return "admin-login.html";
   if (pathname === "/admin/menu") return "admin-menu.html";
   if (pathname === "/admin/tables") return "admin-tables.html";
   if (pathname === "/admin/reports") return "admin-reports.html";
@@ -46,7 +48,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (url.pathname.startsWith("/api/")) {
+  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/uploads/")) {
     const options = {
       hostname: "localhost",
       port: API_PORT,
