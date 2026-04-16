@@ -1,8 +1,13 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "EKImy3aZ9q7ls6o7ESgRf"
 uri = "file://artifacts/restaurant/public/hero-restaurant.png"
 type = "image"
 title = "Restaurant hero image"
+
+[[outputs]]
+id = "bmIanwkEUZ3fwrnYf5J2a"
+uri = "file://Smart-Restaurant-Technical-Guide.md"
+type = "text"
+title = "Smart Restaurant — Technical Guide"
