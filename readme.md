@@ -69,7 +69,6 @@ workspace/
 │           ├── menu.html             # Customer menu (loaded via QR code)
 │           ├── order.html            # Customer order tracking
 │           ├── kitchen.html          # Kitchen order dashboard
-│           ├── kitchen-login.html    # Kitchen login
 │           ├── admin.html            # Admin home
 │           ├── admin-login.html      # Admin login
 │           ├── admin-menu.html       # Manage menu items and categories
@@ -253,7 +252,7 @@ All API routes are prefixed with `/api`.
 |---------|-----------|---------------|
 | Admin   | admin     | admin1234     |
 
-> These can be overridden by setting `ADMIN_PASSWORD` and `KITCHEN_PASSWORD` as environment variables.
+> These can be overridden by setting `ADMIN_PASSWORD` as environment variables.
 
 
 
