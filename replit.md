@@ -58,11 +58,36 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 
 ## Development Setup
 
-- The Replit workflow named `Start application` runs both services:
-  - API server on port `8080`
-  - Restaurant frontend on port `18641`
-- The frontend proxies `/api/*` and `/uploads/*` requests to the API server.
-- The development database is provisioned and the Drizzle schema has been pushed.
+### On Replit
+- The workflow `Start application` runs both services via:
+  - `PORT=8080 pnpm --filter @workspace/api-server run dev`
+  - `PORT=18641 pnpm --filter @workspace/restaurant run dev`
+
+### Locally (or on Render/Railway/Vercel)
+1. `pnpm install`
+2. Copy env examples and fill in values:
+   - `cp artifacts/api-server/.env.example artifacts/api-server/.env`
+   - `cp artifacts/restaurant/.env.example artifacts/restaurant/.env`
+3. `pnpm run dev` — starts both services in parallel
+
+Default ports without env vars:
+- API server: `5000` (set `PORT` in `artifacts/api-server/.env`)
+- Frontend: `3000` (set `PORT` in `artifacts/restaurant/.env`)
+
+### Environment Variables
+**API server** (`artifacts/api-server/.env`):
+- `PORT` — port to listen on (default `5000`)
+- `DATABASE_URL` — PostgreSQL connection string (required)
+- `JWT_SECRET` — JWT signing secret
+- `ADMIN_PASSWORD` / `KITCHEN_PASSWORD` — login passwords
+- `CLIENT_URL` — frontend origin for CORS (default `http://localhost:3000`)
+
+**Frontend** (`artifacts/restaurant/.env`):
+- `PORT` — port to listen on (default `3000`)
+- `API_URL` — full URL of the API server (default `http://localhost:5000`)
+
+### Other notes
+- The frontend proxies `/api/*` and `/uploads/*` requests to the API server via `API_URL`.
 - Frontend files live under `artifacts/restaurant/public/`:
   - HTML pages: `index.html`, `menu.html`, `order.html`, `kitchen.html`, `kitchen-login.html`, `admin.html`, `admin-login.html`, `admin-menu.html`, `admin-tables.html`, `admin-reports.html`
   - CSS: `style.css` (includes admin sidebar layout + mobile nav styles)

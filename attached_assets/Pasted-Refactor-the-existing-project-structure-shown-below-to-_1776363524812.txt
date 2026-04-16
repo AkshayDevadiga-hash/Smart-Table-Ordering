@@ -1,0 +1,257 @@
+Refactor the existing project structure (shown below) to make it fully compatible with **localhost development and free deployment platforms (Render, Vercel, Railway)** instead of being tied to Replit.
+
+---
+
+## 📂 CURRENT STRUCTURE
+
+```
+client/
+server/
+attached_assets/
+shared/
+components.json
+drizzle.config.ts
+package.json
+postcss.config.js
+tailwind.config.ts
+theme.json
+tsconfig.json
+vite.config.ts
+```
+
+---
+
+## 🎯 GOAL
+
+Convert this project into a clean, production-ready structure that:
+
+* Runs locally without Replit
+* Supports environment variables
+* Can be deployed easily
+
+---
+
+## 🔧 REQUIRED CHANGES
+
+### **1. Separate Frontend and Backend Clearly**
+
+Ensure:
+
+* `/client` → React frontend (Vite-based)
+* `/server` → Node.js backend
+
+Remove dependency on shared runtime if not required.
+
+---
+
+### **2. Fix Backend Entry Point**
+
+Inside `/server`:
+
+* Ensure there is a clear entry file:
+
+  ```
+  server/index.js OR server/server.js
+  ```
+
+* Update server start:
+
+```js
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+```
+
+---
+
+### **3. Add Environment Variables**
+
+Create `.env` files:
+
+#### `/server/.env`
+
+```
+PORT=5000
+MONGO_URI=your_mongodb_connection
+JWT_SECRET=your_secret
+CLIENT_URL=http://localhost:5173
+```
+
+#### `/client/.env`
+
+```
+VITE_API_URL=http://localhost:5000
+```
+
+---
+
+### **4. Update Frontend API Calls (IMPORTANT)**
+
+Replace hardcoded URLs with:
+
+```js
+const API_URL = import.meta.env.VITE_API_URL;
+```
+
+Use:
+
+```js
+fetch(`${API_URL}/api/menu`)
+```
+
+---
+
+### **5. Fix CORS in Backend**
+
+```js
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
+```
+
+---
+
+### **6. Database Configuration**
+
+If using MongoDB:
+
+```js
+mongoose.connect(process.env.MONGO_URI);
+```
+
+If using Drizzle (based on your files):
+
+* Move DB config to `/server/db/`
+* Use environment variables for DB connection
+
+---
+
+### **7. Static File Handling (Images)**
+
+Add in backend:
+
+```js
+app.use("/uploads", express.static("uploads"));
+```
+
+Ensure uploaded images are stored in:
+
+```
+/server/uploads/
+```
+
+---
+
+### **8. Fix Package.json Scripts**
+
+### Root `package.json`:
+
+```json
+"scripts": {
+  "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+  "build": "npm run build --prefix client",
+  "start": "npm run start --prefix server"
+}
+```
+
+---
+
+### `/server/package.json`:
+
+```json
+"scripts": {
+  "dev": "nodemon index.js",
+  "start": "node index.js"
+}
+```
+
+---
+
+### `/client/package.json`:
+
+```json
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview"
+}
+```
+
+---
+
+### **9. Remove Replit-Specific Code**
+
+Remove:
+
+* Hardcoded ports
+* Replit URLs
+* Any platform-specific configs
+
+---
+
+### **10. Deployment Ready Setup**
+
+Ensure compatibility:
+
+#### Backend:
+
+* Render / Railway
+
+#### Frontend:
+
+* Vercel / Netlify
+
+---
+
+### **11. Optional Production Setup**
+
+Serve frontend from backend:
+
+```js
+app.use(express.static("client/dist"));
+```
+
+---
+
+## ▶️ HOW TO RUN LOCALLY (FINAL EXPECTED)
+
+### Step 1:
+
+Install dependencies:
+
+```
+npm install
+```
+
+---
+
+### Step 2:
+
+Run both client and server:
+
+```
+npm run dev
+```
+
+---
+
+### Step 3:
+
+Open:
+
+* Frontend → http://localhost:5173
+* Backend → http://localhost:5000
+
+---
+
+## 🎯 EXPECTED RESULT
+
+* Project runs locally without errors
+* API connects correctly
+* Images load properly
+* No dependency on Replit
+* Ready for deployment
+
+---
+
+Update the codebase accordingly and ensure everything works end-to-end.

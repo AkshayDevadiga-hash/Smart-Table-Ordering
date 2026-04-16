@@ -5,8 +5,13 @@ import { fileURLToPath } from "url";
 import QRCode from "qrcode";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = process.env.PORT || 8081;
-const API_PORT = 8080;
+const PORT = process.env.PORT || 3000;
+const API_URL = process.env.API_URL || "http://localhost:5000";
+const _apiUrl = new URL(API_URL);
+const API_HOSTNAME = _apiUrl.hostname;
+const API_PORT = _apiUrl.port
+  ? parseInt(_apiUrl.port, 10)
+  : _apiUrl.protocol === "https:" ? 443 : 80;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -50,11 +55,11 @@ const server = http.createServer((req, res) => {
 
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/uploads/")) {
     const options = {
-      hostname: "localhost",
+      hostname: API_HOSTNAME,
       port: API_PORT,
       path: req.url,
       method: req.method,
-      headers: { ...req.headers, host: `localhost:${API_PORT}` },
+      headers: { ...req.headers, host: `${API_HOSTNAME}:${API_PORT}` },
     };
     const proxyReq = http.request(options, (proxyRes) => {
       res.writeHead(proxyRes.statusCode, proxyRes.headers);
