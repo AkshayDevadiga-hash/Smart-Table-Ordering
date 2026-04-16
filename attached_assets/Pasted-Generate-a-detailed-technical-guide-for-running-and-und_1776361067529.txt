@@ -1,0 +1,204 @@
+Generate a **detailed technical guide** for running and understanding a project called:
+
+**"Smart Restaurant Ordering System"**
+
+---
+
+## 📌 REQUIREMENTS:
+
+The explanation should be **clear, beginner-friendly, and step-by-step**, but also technically detailed enough for development and debugging.
+
+---
+
+## 🔧 1. TECHNOLOGY STACK (VERY IMPORTANT)
+
+Explain clearly:
+
+### **Frontend**
+
+* What language is used (JavaScript)
+* Framework (React.js)
+* Styling (CSS / Tailwind CSS)
+
+### **Backend**
+
+* Language (JavaScript)
+* Runtime (Node.js)
+* Framework (Express.js)
+
+### **Database**
+
+* Type (MongoDB – NoSQL)
+* How it stores data (collections and documents)
+
+### **Real-Time Communication**
+
+* Socket.io (WebSockets)
+
+---
+
+## 🗂 2. PROJECT STRUCTURE
+
+Explain folder structure like:
+
+### **Frontend**
+
+* src/
+
+  * components/
+  * pages/
+  * services/
+
+### **Backend**
+
+* routes/
+* controllers/
+* models/
+* middleware/
+
+Explain what each folder does.
+
+---
+
+## ▶️ 3. HOW TO RUN THE PROJECT LOCALLY (STEP-BY-STEP)**
+
+Explain clearly:
+
+### Step 1: Install Required Software
+
+* Node.js
+* npm
+
+---
+
+### Step 2: Install Dependencies
+
+Run in both frontend and backend:
+
+```
+npm install
+```
+
+---
+
+### Step 3: Start Backend
+
+```
+npm run dev
+```
+
+Explain:
+
+* What this command does
+* Where server runs (http://localhost:5000)
+
+---
+
+### Step 4: Start Frontend
+
+```
+npm start
+```
+
+Explain:
+
+* Opens app at http://localhost:3000
+
+---
+
+## 🗄 4. DATABASE SETUP AND WORKING
+
+Explain in detail:
+
+### **What is MongoDB**
+
+* NoSQL database
+* Stores data as JSON-like documents
+
+---
+
+### **Collections Used**
+
+* Tables
+* Orders
+* Order_Items
+* Menu
+
+Explain each one with example.
+
+---
+
+### **How Data Flows**
+
+Example:
+
+* User orders → stored in Orders
+* Items → stored in Order_Items
+* Prices → fetched from Menu
+
+---
+
+## 🔗 5. DATABASE CONNECTION
+
+Explain:
+
+### Local MongoDB:
+
+```
+mongodb://localhost:27017/restaurant
+```
+
+### MongoDB Atlas:
+
+* Cloud database
+* Connection string usage
+
+---
+
+### Backend Connection Code:
+
+```js
+mongoose.connect(process.env.MONGO_URI)
+```
+
+Explain what this does.
+
+---
+
+## 🔄 6. HOW EVERYTHING WORKS TOGETHER
+
+Explain flow:
+
+1. Frontend sends request
+2. Backend processes logic
+3. Database stores/retrieves data
+4. Backend sends response
+5. UI updates
+
+Also explain:
+
+* How real-time updates work using Socket.io
+
+---
+
+## 🎯 OUTPUT FORMAT
+
+* Clear headings
+* Simple explanations
+* Step-by-step instructions
+* Beginner-friendly but detailed
+
+---
+
+## ✅ GOAL
+
+After reading this guide, a developer should:
+
+* Understand the full tech stack
+* Run the project locally
+* Understand how database works
+* Modify or debug the system
+
+---
+
+Generate the explanation in a clean and structured format.
