@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
-const API_URL = process.env.API_URL || "http://localhost:8080";
+const API_URL = process.env.API_URL || "http://localhost:5000";
 const _apiUrl = new URL(API_URL);
 const API_HOSTNAME = _apiUrl.hostname;
 const API_PORT = _apiUrl.port
