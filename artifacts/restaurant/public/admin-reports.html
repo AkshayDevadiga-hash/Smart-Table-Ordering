@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Income Reports — TableOrder</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .reports-content { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+    .report-tabs { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; }
+    .report-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .summary-card { padding: 1rem; }
+    .summary-label { color: var(--text-muted); font-size: 0.78rem; }
+    .summary-value { font-size: 1.55rem; font-weight: 800; overflow-wrap: anywhere; }
+    .report-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .report-table th, .report-table td { text-align: left; padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .report-table th { background: var(--primary-light); color: var(--primary-dark); font-weight: 700; }
+    .report-table tr:last-child td { border-bottom: none; }
+    .bar-cell { min-width: 140px; }
+    .bar-track { height: 8px; border-radius: 999px; background: #f3f0ec; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; background: var(--primary); }
+    @media (max-width: 680px) {
+      .reports-content { padding: 1rem; }
+      .report-summary { grid-template-columns: 1fr; }
+      .report-table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div class="page-header-title">
+        <a href="/admin" class="back-btn">←</a>
+        <span>Income Reports</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="reports-content">
+    <div class="report-tabs">
+      <button class="tab-btn active" data-period="daily" onclick="setPeriod('daily', this)">Daily</button>
+      <button class="tab-btn" data-period="weekly" onclick="setPeriod('weekly', this)">Weekly</button>
+      <button class="tab-btn" data-period="monthly" onclick="setPeriod('monthly', this)">Monthly</button>
+      <button class="tab-btn" data-period="yearly" onclick="setPeriod('yearly', this)">Yearly</button>
+    </div>
+    <section class="report-summary" id="reportSummary">
+      <div class="card skeleton" style="height:92px"></div>
+      <div class="card skeleton" style="height:92px"></div>
+      <div class="card skeleton" style="height:92px"></div>
+    </section>
+    <section class="card" style="overflow:hidden">
+      <div id="reportRows"><div class="no-data">Loading report...</div></div>
+    </section>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/admin-reports.js"></script>
+</body>
+</html>

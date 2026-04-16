@@ -20,6 +20,10 @@
     .tabs-wrap-inner { max-width: 780px; margin: 0 auto; padding: 0.75rem 1rem; }
 
     .menu-content { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 8rem; }
+    .current-bill { max-width: 780px; margin: 1rem auto 0; padding: 0 1rem; }
+    .current-bill-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.875rem 1rem; border-color: var(--primary); background: var(--primary-light); }
+    .current-bill-title { font-weight: 700; font-size: 0.9rem; }
+    .current-bill-sub { color: var(--text-muted); font-size: 0.78rem; }
     .category-section { margin-bottom: 2.5rem; }
     .category-title { font-size: 1.375rem; margin-bottom: 0.25rem; }
     .category-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
@@ -58,6 +62,10 @@
     .hidden { display: none !important; }
     .sticky-cart { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 100; animation: slideUp 0.2s ease; }
     @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+    @media (max-width: 560px) {
+      .current-bill-card { align-items: stretch; flex-direction: column; }
+      .current-bill-card .btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -83,6 +91,8 @@
       <div class="tab-bar" id="categoryTabs"></div>
     </div>
   </div>
+
+  <div class="current-bill" id="currentBill"></div>
 
   <div class="menu-content" id="menuContent">
     <div id="skeletons">

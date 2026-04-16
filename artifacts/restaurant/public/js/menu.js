@@ -3,6 +3,7 @@ let categories = [];
 let menuItems = [];
 let cart = {}; // itemId -> { item, qty }
 let activeCategory = null;
+let currentOrder = null;
 const CART_KEY = 'tableorder-cart-' + tableId;
 const GST_RATE = 0.18;
 
@@ -52,12 +53,35 @@ async function load() {
     document.title = 'Menu — Table ' + table.tableNumber;
   } catch {}
   try {
+    currentOrder = await api('/orders/current?tableId=' + tableId);
+  } catch {
+    currentOrder = null;
+  }
+  renderCurrentBill();
+  try {
     [categories, menuItems] = await Promise.all([api('/menu/categories'), api('/menu/items')]);
     renderTabs();
     renderMenu();
   } catch (e) {
     document.getElementById('skeletons').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:3rem">Failed to load menu. Please try again.</p>';
   }
+}
+
+function renderCurrentBill() {
+  const el = document.getElementById('currentBill');
+  if (!el || !currentOrder) {
+    if (el) el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = `
+    <div class="card current-bill-card">
+      <div>
+        <div class="current-bill-title">Unpaid bill in progress</div>
+        <div class="current-bill-sub">Order #${currentOrder.id} · ${money(currentOrder.total)} · ${(currentOrder.items || []).length} item(s)</div>
+      </div>
+      <a class="btn btn-primary btn-sm" href="/order/${currentOrder.id}">View and Pay</a>
+    </div>
+  `;
 }
 
 function renderTabs() {

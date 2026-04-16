@@ -1,0 +1,267 @@
+# **10. Issues Identified and Proposed Enhancements**
+
+## **10.1 Overview**
+
+After the implementation of the Smart Restaurant Ordering System, several functional and design-related issues were identified. These issues affect system reliability, security, and user experience. This section outlines the problems observed and provides detailed solutions and enhancements to improve the overall system.
+
+---
+
+# **10.2 Issue 1: Bill Not Persisting (Order Loss Problem)**
+
+## **Problem Description:**
+
+Currently, the system calculates the bill only at the frontend level. When a customer:
+
+* Closes the page
+* Refreshes the browser
+* Revisits the application
+
+the previously added items and bill details are lost. A new order is created, and previous data is not retained.
+
+## **Cause:**
+
+* Order data is stored only in temporary frontend state (cart)
+* No persistent storage in backend linked to session
+
+## **Proposed Solution:**
+
+* Store all order data in the backend database using `session_id`
+* Fetch the active order whenever the user revisits
+
+## **Implementation:**
+
+* Create API:
+
+  * `GET /api/order/current?session_id=xyz`
+* Backend checks for existing active order
+* If found → return existing order
+* If not → create new order
+
+## **Outcome:**
+
+* Bill persists across refresh
+* No data loss
+* Accurate billing system
+
+---
+
+# **10.3 Issue 2: Admin Dashboard UI Not Responsive**
+
+## **Problem Description:**
+
+The admin dashboard UI is not properly optimized for mobile devices:
+
+* Icons overlap
+* Cards are misaligned
+* Layout breaks on smaller screens
+
+## **Cause:**
+
+* Fixed-width elements
+* Lack of responsive design techniques
+
+## **Proposed Solution:**
+
+* Implement responsive grid layout
+* Use flexible containers (Flexbox/Grid)
+* Apply mobile-first design
+
+## **Implementation:**
+
+* Use CSS Grid or frameworks like Tailwind
+* Avoid fixed widths
+* Use percentage or auto-based layouts
+
+## **Outcome:**
+
+* Clean UI on all devices
+* Improved usability for admin
+
+---
+
+# **10.4 Issue 3: No Authentication for Admin and Kitchen**
+
+## **Problem Description:**
+
+Currently, there is no login system for:
+
+* Admin panel
+* Kitchen dashboard
+
+Anyone with the URL can access and modify system data.
+
+## **Risk:**
+
+* Unauthorized access
+* Data manipulation
+* Security vulnerability
+
+## **Proposed Solution:**
+
+* Implement authentication system
+
+## **Implementation:**
+
+* Admin login with username and password
+* Use JWT (JSON Web Token) for session handling
+* Protect routes using middleware
+
+## **Outcome:**
+
+* Secure access control
+* Only authorized users can manage system
+
+---
+
+# **10.5 Issue 4: No Image Support in Menu Items**
+
+## **Problem Description:**
+
+Menu items do not display images, making the UI less attractive and less informative for customers.
+
+## **Cause:**
+
+* No image upload functionality
+* No image field used in UI
+
+## **Proposed Solution:**
+
+* Add image upload feature
+
+## **Implementation:**
+
+* Use file upload (e.g., Multer in backend)
+* Store image URL in database
+* Display image in menu cards
+
+## **Outcome:**
+
+* Improved UI/UX
+* More engaging customer experience
+
+---
+
+# **10.6 Issue 5: Unnecessary Landing Page (“Try Customer”)**
+
+## **Problem Description:**
+
+The system shows a landing page with:
+
+* “Try Customer View”
+* Admin access
+
+This is not practical for real-world use.
+
+## **Proposed Solution:**
+
+* Remove or simplify landing page
+
+## **Implementation:**
+
+* Direct routing:
+
+  * Customer → QR scan → menu
+  * Admin → login page
+  * Kitchen → dashboard
+
+## **Outcome:**
+
+* Cleaner navigation
+* Realistic system behavior
+
+---
+
+# **10.7 Issue 6: No Income Reports Feature**
+
+## **Problem Description:**
+
+The system lacks a reporting feature to track income over time.
+
+## **Requirement:**
+
+* Daily
+* Weekly
+* Monthly
+* Yearly reports
+
+## **Proposed Solution:**
+
+* Add Reports Module in Admin Panel
+
+## **Implementation:**
+
+* Create new page: `/admin/reports`
+* Backend APIs to calculate revenue based on date
+* Display data using charts or tables
+
+## **Outcome:**
+
+* Better business insights
+* Useful for decision making
+
+---
+
+# **10.8 Issue 7: Customer UI Needs Improvement**
+
+## **Problem Description:**
+
+The customer interface appears:
+
+* Too simple
+* Lacking visual elements
+* Not engaging
+
+## **Proposed Enhancements:**
+
+### **1. Add Banner Section**
+
+* Restaurant name
+* Welcome message
+
+### **2. Improve Menu Cards**
+
+* Add images
+* Add ratings
+* Better styling
+
+### **3. Add Sticky Cart Bar**
+
+* Show total items and price
+* Quick navigation to cart
+
+### **4. Add Interactive Features**
+
+* Call waiter button
+* Live bill preview
+
+### **5. Improve Layout**
+
+* Use cards, shadows, spacing
+* Better typography
+
+## **Outcome:**
+
+* Improved user engagement
+* Better customer experience
+
+---
+
+# **10.9 Summary of Improvements**
+
+| Issue          | Solution                         |
+| -------------- | -------------------------------- |
+| Bill not saved | Backend persistence with session |
+| UI issues      | Responsive design                |
+| No security    | Add authentication               |
+| No images      | Add image upload                 |
+| Extra page     | Remove landing page              |
+| No reports     | Add analytics module             |
+| Weak UI        | Enhance customer design          |
+
+---
+
+# **10.10 Conclusion**
+
+The identified issues highlight important gaps in the current system, particularly in areas of data persistence, security, user interface design, and analytics. By implementing the proposed solutions, the system can be significantly improved to meet real-world standards. These enhancements will ensure better performance, increased security, improved user experience, and greater scalability of the Smart Restaurant Ordering System.
+
+---

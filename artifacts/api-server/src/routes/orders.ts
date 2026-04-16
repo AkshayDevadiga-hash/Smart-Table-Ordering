@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, inArray, desc, sql } from "drizzle-orm";
 import { db, ordersTable, orderItemsTable, menuItemsTable, tablesTable } from "@workspace/db";
 import {
   CreateOrderBody,
@@ -69,6 +69,29 @@ router.get("/orders", async (req, res): Promise<void> => {
     items: itemsMap.get(order.id) ?? [],
   }));
 
+  res.json(result);
+});
+
+router.get("/orders/current", async (req, res): Promise<void> => {
+  const tableId = Number(req.query.tableId);
+  if (!Number.isInteger(tableId) || tableId <= 0) {
+    res.status(400).json({ error: "Valid tableId is required" });
+    return;
+  }
+
+  const [order] = await db
+    .select()
+    .from(ordersTable)
+    .where(sql`table_id = ${tableId} and payment_status = 'pending' and status not in ('completed', 'cancelled')`)
+    .orderBy(desc(ordersTable.createdAt))
+    .limit(1);
+
+  if (!order) {
+    res.status(204).send();
+    return;
+  }
+
+  const result = await getOrderWithItems(order.id);
   res.json(result);
 });
 

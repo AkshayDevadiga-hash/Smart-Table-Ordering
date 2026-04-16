@@ -32,13 +32,14 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 - `/admin` — Admin dashboard with revenue stats
 - `/admin/menu` — Menu item management (CRUD)
 - `/admin/tables` — Table management with QR code display/download
+- `/admin/reports` — Paid income reports by day, week, month, or year
 
 ## Database Schema
 
 - `menu_categories` — Menu categories (Starters, Mains, Desserts, Beverages)
 - `menu_items` — Menu items with price, veg flag, availability
 - `restaurant_tables` — Tables with QR code URLs
-- `orders` — Customer orders with status tracking
+- `orders` — Customer orders with order status, payment status, subtotal, GST, and total
 - `order_items` — Individual items in each order
 
 ## Development Setup
@@ -72,10 +73,12 @@ A full-stack QR code-based restaurant management system built with plain HTML, C
 ## Features
 
 - QR code per table, customers scan to access menu
-- Cart with real-time subtotal + 5% GST calculation
+- Cart with real-time subtotal + 18% GST calculation and browser persistence
 - Live order tracking (polls every 5 seconds)
+- Unpaid order resume banner on the customer menu for active table bills
 - Kitchen kanban board: Pending → Received → Preparing → Ready → Delivered
 - Admin stats: today's orders, revenue, active orders, table occupancy
+- Paid-only income reports
 - Popular items ranking
 - Menu CRUD with availability toggle and veg/non-veg markers
 - Downloadable QR codes as PNG files

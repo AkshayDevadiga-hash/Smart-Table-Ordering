@@ -26,6 +26,7 @@ function resolveHtmlFile(pathname) {
   if (pathname === "/kitchen") return "kitchen.html";
   if (pathname === "/admin/menu") return "admin-menu.html";
   if (pathname === "/admin/tables") return "admin-tables.html";
+  if (pathname === "/admin/reports") return "admin-reports.html";
   if (pathname === "/admin") return "admin.html";
   return null;
 }
