@@ -1,4 +1,4 @@
-# Smart Restaurant Ordering System — Technical Guide
+# Smart Restaurant Ordering System 
 
 ## Overview
 
