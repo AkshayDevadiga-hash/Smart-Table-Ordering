@@ -40,4 +40,4 @@ externalPort = 8080
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "PORT=8080 node backend/dist/index.mjs & PORT=5000 API_URL=http://localhost:8080 node frontend/server.js"]
-build = ["bash", "-c", "npm install -g pnpm && pnpm install && pnpm --filter @workspace/backend run build"]
+build = ["bash", "-c", "npx --yes pnpm@10.33.0 install && npx pnpm@10.33.0 --filter @workspace/backend run build"]
