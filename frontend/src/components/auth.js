@@ -21,7 +21,10 @@ function clearAuth() {
 
 function parseJwtPayload(token) {
   try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
     return JSON.parse(atob(base64));
   } catch {
     return null;
@@ -35,23 +38,37 @@ function isTokenValid(token) {
   return payload.exp * 1000 > Date.now();
 }
 
-function requireAuth(expectedRole, loginPath) {
+function requireAuth(expectedRoles, loginPath) {
   const token = getToken();
   const role = getRole();
-  if (!isTokenValid(token) || role !== expectedRole) {
+  
+  if (!isTokenValid(token)) {
     clearAuth();
     window.location.replace(loginPath);
     return false;
   }
+  
+  const rolesArray = Array.isArray(expectedRoles) ? expectedRoles : [expectedRoles];
+  if (!rolesArray.includes(role)) {
+    // If they have a valid token but wrong role for this page, bounce them to their correct home
+    if (role === 'admin') window.location.replace('/admin');
+    else if (role === 'kitchen') window.location.replace('/kitchen');
+    else {
+      clearAuth();
+      window.location.replace(loginPath);
+    }
+    return false;
+  }
+  
   return true;
 }
 
 function requireAdminAuth() {
-  return requireAuth('admin', '/admin/login');
+  return requireAuth(['admin'], '/login');
 }
 
 function requireKitchenAuth() {
-  return requireAuth('kitchen', '/kitchen/login');
+  return requireAuth(['kitchen', 'admin'], '/login');
 }
 
 function logout(loginPath) {

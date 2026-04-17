@@ -13,7 +13,7 @@ export function login(req: Request, res: Response): void {
   if (!username || !password) { res.status(400).json({ error: "Username and password are required" }); return; }
   const cred = CREDENTIALS[username as string];
   if (!cred || cred.password !== password) { res.status(401).json({ error: "Invalid credentials" }); return; }
-  const token = jwt.sign({ username, role: cred.role }, JWT_SECRET, { expiresIn: "24h" });
+  const token = jwt.sign({ username, role: cred.role }, JWT_SECRET, { expiresIn: "30d" });
   res.json({ token, role: cred.role });
 }
 

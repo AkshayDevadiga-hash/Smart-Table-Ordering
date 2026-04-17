@@ -35,7 +35,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const uploadsDir = path.resolve(__dirname, "..", "uploads");
+const uploadsDir = path.resolve(process.cwd(), "uploads");
 fs.mkdirSync(uploadsDir, { recursive: true });
 app.use("/uploads", express.static(uploadsDir));
 

@@ -4,8 +4,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 import { db, menuCategoriesTable, menuItemsTable } from "../db/index";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.resolve(__dirname, "..", "..", "uploads");
+const uploadsDir = path.resolve(process.cwd(), "uploads");
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadsDir),
