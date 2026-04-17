@@ -1,5 +1,5 @@
 async function api(path) {
-  const res = await fetch('/api' + path);
+  const res = await fetch(apiUrl(path));
   if (!res.ok) throw new Error();
   return res.json();
 }

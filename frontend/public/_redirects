@@ -1,0 +1,10 @@
+/admin/menu /admin-menu.html 200
+/admin/tables /admin-tables.html 200
+/admin/reports /admin-reports.html 200
+/admin/login /login.html 200
+/kitchen/login /login.html 200
+/login /login.html 200
+/admin /admin.html 200
+/kitchen /kitchen.html 200
+/menu/* /menu.html 200
+/order/* /order.html 200

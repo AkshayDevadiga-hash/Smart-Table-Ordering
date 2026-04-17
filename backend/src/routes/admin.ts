@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as adminController from "../controllers/adminController";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/admin/stats", adminController.getStats);
 router.get("/admin/reports", adminController.getReports);

@@ -9,7 +9,7 @@ function showToast(msg, error) {
 }
 
 async function api(path, opts) {
-  const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const res = await fetch(apiUrl(path), { headers: { 'Content-Type': 'application/json' }, ...opts });
   if (!res.ok) throw new Error(await res.text());
   if (res.status === 204) return null;
   return res.json();
@@ -57,7 +57,7 @@ function renderTables() {
   }
   grid.innerHTML = tables.map(t => {
     const menuUrl = encodeURIComponent(window.location.origin + '/menu/' + t.id);
-    const qrSrc = '/qr?url=' + menuUrl;
+    const qrSrc = apiUrl('/qr?url=' + menuUrl);
     return `
       <div class="table-card">
         <div class="table-card-top">

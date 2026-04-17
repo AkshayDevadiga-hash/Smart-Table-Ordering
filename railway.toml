@@ -1,0 +1,9 @@
+# Railway: connect the repo, set root to this project directory if needed, and add env vars (see backend/.env.example).
+# Neon: paste the connection string as DATABASE_URL (use sslmode=require).
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm install && pnpm --filter @workspace/backend run build"
+
+[deploy]
+startCommand = "pnpm --filter @workspace/backend run start"

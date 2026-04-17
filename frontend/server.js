@@ -1,4 +1,5 @@
 import http from "http";
+import https from "https";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -9,9 +10,12 @@ const PORT = process.env.PORT || 3000;
 const API_URL = process.env.API_URL || "http://localhost:5000";
 const _apiUrl = new URL(API_URL);
 const API_HOSTNAME = _apiUrl.hostname;
-const API_PORT = _apiUrl.port
-  ? parseInt(_apiUrl.port, 10)
-  : _apiUrl.protocol === "https:" ? 443 : 80;
+const useHttps = _apiUrl.protocol === "https:";
+const defaultPort = useHttps ? 443 : 80;
+const API_PORT = _apiUrl.port ? parseInt(_apiUrl.port, 10) : defaultPort;
+const proxyClient = useHttps ? https : http;
+const proxyHostHeader =
+  API_PORT === defaultPort ? API_HOSTNAME : `${API_HOSTNAME}:${API_PORT}`;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -74,9 +78,9 @@ const server = http.createServer((req, res) => {
       port: API_PORT,
       path: req.url,
       method: req.method,
-      headers: { ...req.headers, host: `${API_HOSTNAME}:${API_PORT}` },
+      headers: { ...req.headers, host: proxyHostHeader },
     };
-    const proxyReq = http.request(options, (proxyRes) => {
+    const proxyReq = proxyClient.request(options, (proxyRes) => {
       res.writeHead(proxyRes.statusCode, proxyRes.headers);
       proxyRes.pipe(res);
     });

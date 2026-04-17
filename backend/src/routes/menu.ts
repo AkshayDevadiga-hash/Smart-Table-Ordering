@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as menuController from "../controllers/menuController";
 import { upload } from "../services/menuService";
 
-const router = Router();
+const router: Router = Router();
 
 router.post("/menu/upload", upload.single("image"), menuController.uploadImage);
 router.get("/menu/categories", menuController.getCategories);

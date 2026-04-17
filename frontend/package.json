@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "build": "echo 'Static HTML build - no build step needed'",
+    "build": "node ./scripts/cf-build.mjs",
     "serve": "node server.js",
     "typecheck": "echo 'No TypeScript in HTML/JS mode'"
   },

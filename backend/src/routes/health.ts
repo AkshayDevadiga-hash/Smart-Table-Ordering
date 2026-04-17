@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as healthController from "../controllers/healthController";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/healthz", healthController.healthCheck);
 

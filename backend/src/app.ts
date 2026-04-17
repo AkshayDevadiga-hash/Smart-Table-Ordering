@@ -25,9 +25,25 @@ app.use(
   }),
 );
 
+const clientUrlEnv = process.env.CLIENT_URL || "http://localhost:3000";
+const allowedOrigins = clientUrlEnv
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin(originHeader, callback) {
+      if (!originHeader) {
+        callback(null, true);
+        return;
+      }
+      if (allowedOrigins.includes(originHeader)) {
+        callback(null, originHeader);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
   }),
 );

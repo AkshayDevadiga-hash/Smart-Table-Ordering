@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as tableController from "../controllers/tableController";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/tables", tableController.getTables);
 router.post("/tables", tableController.createTable);

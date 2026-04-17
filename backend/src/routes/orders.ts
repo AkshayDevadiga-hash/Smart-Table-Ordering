@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as orderController from "../controllers/orderController";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/orders/current", orderController.getCurrentOrder);
 router.get("/orders", orderController.listOrders);

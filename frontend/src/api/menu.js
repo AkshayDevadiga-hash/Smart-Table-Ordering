@@ -39,7 +39,7 @@ function showToast(msg, error) {
 }
 
 async function api(path, opts) {
-  const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const res = await fetch(apiUrl(path), { headers: { 'Content-Type': 'application/json' }, ...opts });
   if (!res.ok) throw new Error(await res.text());
   if (res.status === 204) return null;
   return res.json();
@@ -122,7 +122,7 @@ function renderMenu() {
       const div = document.createElement('div');
       div.className = 'menu-item' + (!item.isAvailable ? ' unavailable' : '');
       div.innerHTML = `
-        ${item.imageUrl ? `<img class="menu-item-img" src="${item.imageUrl}" alt="${item.name}" loading="lazy" />` : ''}
+        ${item.imageUrl ? `<img class="menu-item-img" src="${assetUrl(item.imageUrl)}" alt="${item.name}" loading="lazy" />` : ''}
         <div class="menu-item-info">
           <div class="menu-item-name-row">
             <span class="${item.isVeg ? 'veg-dot' : 'nonveg-dot'}"></span>

@@ -18,7 +18,7 @@ function showToast(msg, error) {
 }
 
 async function api(path, opts) {
-  const res = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const res = await fetch(apiUrl(path), { headers: { 'Content-Type': 'application/json' }, ...opts });
   if (!res.ok) throw new Error(await res.text());
   if (res.status === 204) return null;
   return res.json();
@@ -80,7 +80,7 @@ function renderMenu() {
         row.className = 'item-row' + (!item.isAvailable ? ' unavailable' : '');
         row.innerHTML = `
           ${item.imageUrl
-            ? `<img class="item-thumb" src="${item.imageUrl}" alt="${item.name}" loading="lazy" />`
+            ? `<img class="item-thumb" src="${assetUrl(item.imageUrl)}" alt="${item.name}" loading="lazy" />`
             : `<div class="item-thumb-placeholder">🍽️</div>`}
           <div class="item-row-info">
             <div class="item-row-name">
@@ -136,7 +136,7 @@ function resetImageFields() {
 
 function setImagePreview(url) {
   const preview = document.getElementById('imgPreview');
-  preview.src = url;
+  preview.src = assetUrl(url);
   preview.style.display = 'block';
 }
 
@@ -148,7 +148,7 @@ async function handleImageSelect() {
   try {
     const formData = new FormData();
     formData.append('image', file);
-    const res = await fetch('/api/menu/upload', { method: 'POST', body: formData });
+    const res = await fetch(apiUrl('/menu/upload'), { method: 'POST', body: formData });
     if (!res.ok) throw new Error('Upload failed');
     const data = await res.json();
     pendingImageUrl = data.url;
