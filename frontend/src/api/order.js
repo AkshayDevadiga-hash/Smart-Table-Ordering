@@ -86,7 +86,7 @@ function renderContent(o) {
         </div>
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
           <span class="badge badge-${getStatusBadge(o.status)}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
-          <span class="badge ${paymentStatus === 'paid' ? 'badge-green' : 'badge-yellow'}">${paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}</span>
+          ${o.status !== 'cancelled' ? `<span class="badge ${paymentStatus === 'paid' ? 'badge-green' : 'badge-yellow'}">${paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}</span>` : ''}
         </div>
       </div>
       <div class="order-items-list">
@@ -98,7 +98,7 @@ function renderContent(o) {
         </div>
       </div>
       ${o.specialInstructions ? `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-muted)">📝 ${o.specialInstructions}</div>` : ''}
-      ${paymentStatus !== 'paid' ? `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>` : '<div class="status-message badge-green" style="margin-top:1rem;margin-bottom:0;background:var(--secondary-light)">Payment completed. Thank you.</div>'}
+      ${o.status === 'cancelled' ? '' : paymentStatus !== 'paid' ? `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>` : '<div class="status-message badge-green" style="margin-top:1rem;margin-bottom:0;background:var(--secondary-light)">Payment completed. Thank you.</div>'}
     </div>
     ${o.status !== 'delivered' && o.status !== 'cancelled'
       ? '<div class="refresh-hint">🔄 Auto-refreshing every 5 seconds…</div>'
