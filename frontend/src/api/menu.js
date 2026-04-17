@@ -45,6 +45,15 @@ async function api(path, opts) {
   return res.json();
 }
 
+async function refreshCurrentOrder() {
+  try {
+    currentOrder = await api('/orders/current?tableId=' + tableId);
+  } catch {
+    currentOrder = null;
+  }
+  renderCurrentBill();
+}
+
 async function load() {
   loadCart();
   try {
@@ -52,12 +61,8 @@ async function load() {
     document.getElementById('tableLabel').textContent = 'Table ' + table.tableNumber;
     document.title = 'Menu — Table ' + table.tableNumber;
   } catch {}
-  try {
-    currentOrder = await api('/orders/current?tableId=' + tableId);
-  } catch {
-    currentOrder = null;
-  }
-  renderCurrentBill();
+  await refreshCurrentOrder();
+  setInterval(refreshCurrentOrder, 5000);
   try {
     [categories, menuItems] = await Promise.all([api('/menu/categories'), api('/menu/items')]);
     renderTabs();
