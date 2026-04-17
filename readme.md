@@ -89,13 +89,6 @@ project-root/
 
 ## Development Setup
 
-### On Replit
-
-The workflow `Start application` runs both services:
-```
-PORT=8080 pnpm --filter @workspace/backend run dev & PORT=18641 pnpm --filter @workspace/frontend run dev
-```
-
 ### Locally (or on Render/Railway/Vercel)
 
 1. `pnpm install`
