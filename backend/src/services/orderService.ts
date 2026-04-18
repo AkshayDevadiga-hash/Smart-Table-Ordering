@@ -129,7 +129,21 @@ export async function createOrder(data: {
   return { order: { ...order, tableNumber: table.tableNumber, items: insertedItems } };
 }
 
-export async function updateOrderStatus(orderId: number, status: string) {
+const NON_CANCELLABLE_STATUSES = ["preparing", "ready", "delivered", "completed"];
+
+export async function updateOrderStatus(orderId: number, status: string): Promise<{ error: string } | Awaited<ReturnType<typeof getOrderWithItems>> | null> {
+  const [currentOrder] = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));
+  if (!currentOrder) return null;
+
+  if (status === "cancelled") {
+    if (currentOrder.paymentStatus === "paid") {
+      return { error: "Cannot cancel an order that has already been paid" };
+    }
+    if (NON_CANCELLABLE_STATUSES.includes(currentOrder.status)) {
+      return { error: `Cannot cancel an order that is already ${currentOrder.status}` };
+    }
+  }
+
   const [order] = await db
     .update(ordersTable)
     .set({ status: status as any, updatedAt: new Date() })

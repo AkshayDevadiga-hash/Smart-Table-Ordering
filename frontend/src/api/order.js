@@ -13,6 +13,9 @@ const STATUS_MESSAGES = {
 let order = null;
 let interval = null;
 
+let selectedRating = 0;
+let reviewDraft = '';
+
 function money(value) {
   const amount = Number(value);
   return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
@@ -56,41 +59,52 @@ function renderReviewForm() {
       </div>
     </div>`;
   }
+  const starsHtml = [1,2,3,4,5].map(n =>
+    `<button class="star-btn${n <= selectedRating ? ' active' : ''}" data-val="${n}" onclick="setRating(${n})">${n <= selectedRating ? '⭐' : '☆'}</button>`
+  ).join('');
   return `<div class="review-section">
     <h3 class="review-title">How was your experience?</h3>
-    <div class="star-rating" id="starRating">
-      ${[1,2,3,4,5].map(n => `<button class="star-btn" data-val="${n}" onclick="setRating(${n})">☆</button>`).join('')}
+    <div class="star-rating" id="starRating" data-rating="${selectedRating}">
+      ${starsHtml}
     </div>
-    <textarea id="reviewComment" class="form-textarea" placeholder="Leave a comment… (optional, max 500 chars)" rows="3" maxlength="500"></textarea>
+    <textarea id="reviewComment" class="form-textarea" placeholder="Leave a comment… (optional, max 500 chars)" rows="3" maxlength="500" oninput="reviewDraft=this.value">${reviewDraft ? reviewDraft.replace(/</g,'&lt;') : ''}</textarea>
     <button class="btn btn-primary" style="width:100%" id="submitReviewBtn" onclick="submitReview()">Submit Review</button>
   </div>`;
 }
 
 function setRating(val) {
-  document.querySelectorAll('.star-btn').forEach((btn, i) => {
-    btn.textContent = i < val ? '⭐' : '☆';
-    btn.classList.toggle('active', i < val);
-  });
-  document.getElementById('starRating').dataset.rating = val;
+  selectedRating = val;
+  const container = document.getElementById('starRating');
+  if (container) {
+    container.dataset.rating = val;
+    container.querySelectorAll('.star-btn').forEach((btn, i) => {
+      btn.textContent = i < val ? '⭐' : '☆';
+      btn.classList.toggle('active', i < val);
+    });
+  }
 }
 
 async function submitReview() {
-  const rating = parseInt(document.getElementById('starRating').dataset.rating || '0');
-  if (!rating) { showToast('Please select a star rating.', true); return; }
-  const comment = document.getElementById('reviewComment').value.trim() || null;
+  if (!selectedRating) { showToast('Please select a star rating.', true); return; }
+  const comment = reviewDraft.trim() || null;
+  if (comment && comment.length > 500) { showToast('Comment must be 500 characters or fewer.', true); return; }
   const btn = document.getElementById('submitReviewBtn');
   btn.disabled = true;
   btn.textContent = 'Submitting…';
   try {
     await api('/reviews', {
       method: 'POST',
-      body: JSON.stringify({ orderId, rating, comment }),
+      body: JSON.stringify({ orderId, rating: selectedRating, comment }),
     });
     markReviewSubmitted();
+    selectedRating = 0;
+    reviewDraft = '';
     showToast('Thank you for your review!');
     renderContent(order);
-  } catch {
-    showToast('Failed to submit review. Please try again.', true);
+  } catch (e) {
+    let msg = 'Failed to submit review. Please try again.';
+    try { const parsed = JSON.parse(e.message); if (parsed.error) msg = parsed.error; } catch {}
+    showToast(msg, true);
     btn.disabled = false;
     btn.textContent = 'Submit Review';
   }
@@ -121,7 +135,7 @@ function renderContent(o) {
   const tax = safeNumber(o.tax);
   const total = safeNumber(o.total);
   const paymentStatus = o.paymentStatus || 'pending';
-  const canCancel = o.status === 'pending' || o.status === 'received';
+  const canCancel = (o.status === 'pending' || o.status === 'received') && paymentStatus !== 'paid';
   const showReview = (o.status === 'delivered' || paymentStatus === 'paid') && o.status !== 'cancelled';
 
   let paymentSection = '';
@@ -214,8 +228,10 @@ async function cancelOrder() {
     clearInterval(interval);
     renderContent(order);
     showToast('Order cancelled successfully.');
-  } catch {
-    showToast('Could not cancel order. Please try again.', true);
+  } catch (e) {
+    let msg = 'Could not cancel order. Please try again.';
+    try { const parsed = JSON.parse(e.message); if (parsed.error) msg = parsed.error; } catch {}
+    showToast(msg, true);
     btn.disabled = false;
     btn.textContent = 'Yes, Cancel Order';
   }

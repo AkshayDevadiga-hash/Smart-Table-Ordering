@@ -44,9 +44,10 @@ export async function updateOrderStatus(req: Request, res: Response): Promise<vo
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateOrderStatusBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
-  const order = await orderService.updateOrderStatus(params.data.orderId, parsed.data.status);
-  if (!order) { res.status(404).json({ error: "Order not found" }); return; }
-  res.json(order);
+  const result = await orderService.updateOrderStatus(params.data.orderId, parsed.data.status);
+  if (!result) { res.status(404).json({ error: "Order not found" }); return; }
+  if ("error" in result) { res.status(422).json({ error: result.error }); return; }
+  res.json(result);
 }
 
 export async function updatePaymentStatus(req: Request, res: Response): Promise<void> {

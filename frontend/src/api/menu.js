@@ -53,6 +53,41 @@ async function refreshCurrentOrder() {
     currentOrder = null;
   }
   renderCurrentBill();
+  renderOrderHistory();
+}
+
+const STATUS_BADGE = { pending:'yellow', received:'blue', preparing:'orange', ready:'green', delivered:'gray', cancelled:'red', completed:'gray' };
+const STATUS_LABEL = { pending:'Pending', received:'Received', preparing:'Preparing', ready:'Ready', delivered:'Delivered', cancelled:'Cancelled', completed:'Completed' };
+
+async function renderOrderHistory() {
+  const el = document.getElementById('orderHistory');
+  if (!el) return;
+  try {
+    const orders = await api('/orders?tableId=' + tableId);
+    const past = (orders || []).filter(o => o.status === 'cancelled' || o.status === 'delivered' || o.status === 'completed' || o.paymentStatus === 'paid');
+    if (!past.length) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+      <div style="margin-top:1rem">
+        <div class="order-history-title">Your Orders</div>
+        ${past.map(o => `
+          <a href="/order/${o.id}" style="text-decoration:none;color:inherit;display:block">
+            <div class="order-history-item">
+              <div class="order-history-info">
+                <div class="order-history-num">Order #${o.id}</div>
+                <div class="order-history-sub">${(o.items||[]).map(i => i.quantity+'× '+i.menuItemName).join(', ') || 'No items'}</div>
+              </div>
+              <div class="order-history-right">
+                <span class="badge badge-${STATUS_BADGE[o.status]||'gray'}">${STATUS_LABEL[o.status]||o.status}</span>
+                <span style="font-weight:700;font-size:0.875rem">${money(o.total)}</span>
+              </div>
+            </div>
+          </a>
+        `).join('')}
+      </div>
+    `;
+  } catch {
+    el.innerHTML = '';
+  }
 }
 
 async function load() {

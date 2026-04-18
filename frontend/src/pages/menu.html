@@ -69,6 +69,15 @@
 
     .menu-footer { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem; text-align: center; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
     .menu-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .header-about { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-decoration: none; padding: 0.375rem 0.75rem; border: 1.5px solid var(--border); border-radius: 999px; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+    .header-about:hover { color: var(--primary); border-color: var(--primary); }
+    .order-history { max-width: 780px; margin: 0 auto; padding: 0 1rem; }
+    .order-history-title { font-size: 0.875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+    .order-history-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem; }
+    .order-history-info { flex: 1; min-width: 0; }
+    .order-history-num { font-weight: 600; font-size: 0.875rem; }
+    .order-history-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .order-history-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0; }
 
     .no-results { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 
@@ -91,11 +100,14 @@
           <div class="menu-brand-sub" id="tableLabel">Loading…</div>
         </div>
       </div>
-      <button class="cart-btn" id="cartToggle" style="display:none">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        Cart
-        <span class="cart-count" id="cartCount">0</span>
-      </button>
+      <div style="display:flex;align-items:center;gap:0.625rem">
+        <a href="/about" class="header-about">About</a>
+        <button class="cart-btn" id="cartToggle" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Cart
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -113,6 +125,7 @@
   </div>
 
   <div class="current-bill" id="currentBill"></div>
+  <div class="order-history" id="orderHistory"></div>
 
   <div class="menu-content" id="menuContent">
     <div id="skeletons">
@@ -124,7 +137,7 @@
   </div>
 
   <div class="menu-footer">
-    <a href="/about">About TableOrder</a> · Powered by QR ordering technology
+    Powered by QR ordering technology
   </div>
 
   <!-- Cart Drawer -->
