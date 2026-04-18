@@ -16,3 +16,8 @@ export async function getRecentOrders(_req: Request, res: Response): Promise<voi
   const orders = await adminService.getRecentOrders();
   res.json(orders);
 }
+
+export async function getTableRevenue(_req: Request, res: Response): Promise<void> {
+  const data = await adminService.getTableRevenue();
+  res.json(data);
+}

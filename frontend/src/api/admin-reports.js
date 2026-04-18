@@ -86,4 +86,51 @@ async function loadReport() {
   }
 }
 
+function renderTableRevenue(rows) {
+  const el = document.getElementById('tableRevenueRows');
+  if (!el) return;
+  if (!rows || !rows.length) {
+    el.innerHTML = '<div class="no-data">No paid orders yet.</div>';
+    return;
+  }
+  const maxRev = Math.max(...rows.map(r => Number(r.totalRevenue) || 0), 1);
+  el.innerHTML = `
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th>Orders</th>
+          <th>Revenue</th>
+          <th>Trend</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => {
+          const rev = Number(row.totalRevenue) || 0;
+          const width = Math.max(4, Math.round((rev / maxRev) * 100));
+          return `
+            <tr>
+              <td><strong>Table ${row.tableNumber}</strong></td>
+              <td>${row.totalOrders}</td>
+              <td><strong>${money(rev)}</strong></td>
+              <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadTableRevenue() {
+  try {
+    const rows = await api('/admin/table-revenue');
+    renderTableRevenue(rows);
+  } catch {
+    const el = document.getElementById('tableRevenueRows');
+    if (el) el.innerHTML = '<div class="no-data">Failed to load table revenue.</div>';
+  }
+}
+
 loadReport();
+loadTableRevenue();

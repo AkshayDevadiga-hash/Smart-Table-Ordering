@@ -1,0 +1,172 @@
+### 🛠️ Reviews Fix + Table-wise Reporting Prompt
+
+Fix review visibility issues and implement table-based analytics features.
+
+---
+
+## 1. ❌ Review Not Showing on Admin Page
+
+### Problem:
+
+* Reviews are submitted but not visible on admin page
+
+### Fix Steps:
+
+#### Backend:
+
+* Verify `GET /api/reviews` returns:
+
+  * `order_id`
+  * `rating`
+  * `comment`
+  * `created_at`
+* Join with orders table to include:
+
+  * `table_id`
+
+Example:
+
+```
+SELECT r.*, o.table_id
+FROM reviews r
+JOIN orders o ON r.order_id = o.id;
+```
+
+---
+
+#### Frontend (Admin Page):
+
+* Fetch reviews using:
+
+  * `GET /api/reviews`
+
+* Render properly:
+
+  * Table ID
+  * Rating ⭐
+  * Comment
+  * Date
+
+* Debug:
+
+  * Check API response in console
+  * Fix field mismatch (`snake_case` vs `camelCase`)
+
+---
+
+## 2. 📊 Table-wise Review Report
+
+### Requirement:
+
+* Admin should see reviews grouped by table
+
+### Implementation:
+
+#### UI:
+
+* Add filter:
+
+  * Dropdown: “Filter by Table”
+* Group display:
+
+  * Table No: X
+
+    * ⭐⭐⭐⭐ - Comment
+    * ⭐⭐⭐ - Comment
+
+#### Optional:
+
+* Show average rating per table:
+
+```
+Average Rating = SUM(rating) / COUNT(reviews)
+```
+
+---
+
+## 3. 💰 Table-wise Revenue Report
+
+### Requirement:
+
+* Show revenue generated per table
+
+---
+
+### Backend:
+
+Create query:
+
+```
+SELECT table_id,
+       COUNT(id) as total_orders,
+       SUM(total) as total_revenue
+FROM orders
+WHERE payment_status = 'paid'
+GROUP BY table_id;
+```
+
+---
+
+### API:
+
+* Add endpoint:
+
+  * `GET /api/reports/table-revenue`
+
+Response example:
+
+```
+[
+  {
+    table_id: 1,
+    total_orders: 5,
+    total_revenue: 2500
+  }
+]
+```
+
+---
+
+### Frontend (Admin Reports Page):
+
+Display:
+
+* Table ID
+* Total Orders
+* Total Revenue
+
+Optional:
+
+* Sort by highest revenue
+* Add date filter
+
+---
+
+## 4. 🔍 Combine Reviews + Revenue Insights (Bonus)
+
+Enhance admin dashboard:
+
+For each table show:
+
+* Total revenue
+* Total orders
+* Average rating
+
+---
+
+## 5. ⚠️ Debug Checklist
+
+* Ensure reviews table has correct data
+* Ensure `order_id` exists in orders table
+* Check joins are working correctly
+* Verify API response format matches frontend
+
+---
+
+### Goal:
+
+* Fix review visibility issue
+* Enable table-based analytics
+* Improve admin insights and reporting system
+
+---

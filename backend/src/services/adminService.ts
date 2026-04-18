@@ -91,6 +91,36 @@ export async function getReports(period: string) {
   };
 }
 
+export async function getTableRevenue() {
+  const paidOrders = await db
+    .select()
+    .from(ordersTable)
+    .where(sql`payment_status = 'paid'`);
+
+  if (!paidOrders.length) return [];
+
+  const tableIds = [...new Set(paidOrders.map(o => o.tableId))];
+  const tables = await db.select().from(tablesTable).where(inArray(tablesTable.id, tableIds));
+  const tableMap = new Map(tables.map(t => [t.id, t]));
+
+  const grouped = new Map<number, { tableId: number; tableNumber: number; totalOrders: number; totalRevenue: number }>();
+  for (const order of paidOrders) {
+    const row = grouped.get(order.tableId) ?? {
+      tableId: order.tableId,
+      tableNumber: tableMap.get(order.tableId)?.tableNumber ?? 0,
+      totalOrders: 0,
+      totalRevenue: 0,
+    };
+    row.totalOrders += 1;
+    row.totalRevenue += Number(order.total) || 0;
+    grouped.set(order.tableId, row);
+  }
+
+  return [...grouped.values()]
+    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .map(row => ({ ...row, totalRevenue: row.totalRevenue.toFixed(2) }));
+}
+
 export async function getRecentOrders() {
   const orders = await db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt)).limit(20);
 

@@ -56,7 +56,7 @@
       <div class="admin-content">
         <div class="filter-bar">
           <div class="filter-group">
-            <label class="filter-label">Filter by Rating</label>
+            <label class="filter-label">Rating</label>
             <select class="filter-select" id="ratingFilter" onchange="loadReviews()">
               <option value="">All Ratings</option>
               <option value="5">⭐⭐⭐⭐⭐ (5)</option>
@@ -64,6 +64,12 @@
               <option value="3">⭐⭐⭐ (3)</option>
               <option value="2">⭐⭐ (2)</option>
               <option value="1">⭐ (1)</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Table</label>
+            <select class="filter-select" id="tableFilter" onchange="loadReviews()">
+              <option value="">All Tables</option>
             </select>
           </div>
           <div class="filter-group">

@@ -24,11 +24,15 @@ export async function createReview(req: Request, res: Response): Promise<void> {
 
 export async function listReviews(req: Request, res: Response): Promise<void> {
   const rating = req.query.rating !== undefined ? Number(req.query.rating) : undefined;
+  const tableId = req.query.tableId !== undefined ? Number(req.query.tableId) : undefined;
   const from = typeof req.query.from === "string" ? req.query.from : undefined;
   const to = typeof req.query.to === "string" ? req.query.to : undefined;
   if (rating !== undefined && (!Number.isInteger(rating) || rating < 1 || rating > 5)) {
     res.status(400).json({ error: "Rating filter must be between 1 and 5" }); return;
   }
-  const reviews = await reviewService.listReviews({ rating, from, to });
+  if (tableId !== undefined && (!Number.isInteger(tableId) || tableId <= 0)) {
+    res.status(400).json({ error: "tableId filter must be a positive integer" }); return;
+  }
+  const reviews = await reviewService.listReviews({ rating, tableId, from, to });
   res.json(reviews);
 }

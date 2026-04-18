@@ -6,7 +6,21 @@ let activeCategory = null;
 let currentOrder = null;
 let vegFilter = 'all'; // 'all' | 'veg' | 'nonveg'
 const CART_KEY = 'tableorder-cart-' + tableId;
+const SESSION_KEY = 'tableorder-session-' + tableId;
 const GST_RATE = 0.18;
+
+function getOrCreateSessionId() {
+  let sid = localStorage.getItem(SESSION_KEY);
+  if (!sid) {
+    sid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+    localStorage.setItem(SESSION_KEY, sid);
+  }
+  return sid;
+}
+
+const sessionId = getOrCreateSessionId();
 
 function money(value) {
   const amount = Number(value);
@@ -48,7 +62,7 @@ async function api(path, opts) {
 
 async function refreshCurrentOrder() {
   try {
-    currentOrder = await api('/orders/current?tableId=' + tableId);
+    currentOrder = await api('/orders/current?tableId=' + tableId + '&sessionId=' + encodeURIComponent(sessionId));
   } catch {
     currentOrder = null;
   }
@@ -63,8 +77,10 @@ async function renderOrderHistory() {
   const el = document.getElementById('orderHistory');
   if (!el) return;
   try {
-    const orders = await api('/orders?tableId=' + tableId);
-    const past = (orders || []).filter(o => o.status === 'cancelled' || o.status === 'delivered' || o.status === 'completed' || o.paymentStatus === 'paid');
+    const orders = await api('/orders?sessionId=' + encodeURIComponent(sessionId));
+    const past = (orders || []).filter(o =>
+      o.status === 'cancelled' || o.status === 'delivered' || o.status === 'completed' || o.paymentStatus === 'paid'
+    );
     if (!past.length) { el.innerHTML = ''; return; }
     el.innerHTML = `
       <div style="margin-top:1rem">
@@ -293,6 +309,7 @@ async function placeOrder() {
       method: 'POST',
       body: JSON.stringify({
         tableId,
+        sessionId,
         specialInstructions: document.getElementById('specialInstructions').value || null,
         items: items.map(({ item, qty }) => ({ menuItemId: item.id, quantity: Number(qty || 0) })),
       }),

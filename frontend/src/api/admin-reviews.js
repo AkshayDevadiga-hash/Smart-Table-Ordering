@@ -24,13 +24,33 @@ function formatDate(str) {
   return new Date(str).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function loadTableOptions() {
+  try {
+    const tables = await api('/tables');
+    const sel = document.getElementById('tableFilter');
+    if (!sel) return;
+    tables.sort((a, b) => a.tableNumber - b.tableNumber).forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = 'Table ' + t.tableNumber;
+      sel.appendChild(opt);
+    });
+  } catch {}
+}
+
 async function loadReviews() {
   const rating = document.getElementById('ratingFilter').value;
+  const tableId = document.getElementById('tableFilter').value;
   const from = document.getElementById('fromDate').value;
   const to = document.getElementById('toDate').value;
 
   const params = new URLSearchParams();
   if (rating) params.set('rating', rating);
+  if (tableId) params.set('tableId', tableId);
   if (from) params.set('from', from);
   if (to) params.set('to', to);
 
@@ -61,28 +81,26 @@ async function loadReviews() {
         <div class="review-header">
           <div>
             <div class="review-stars">${stars(r.rating)}</div>
-            <div class="review-order">Order #${r.orderId}</div>
+            <div class="review-order">Order #${r.orderId}${r.tableNumber != null ? ' · Table ' + r.tableNumber : ''}</div>
           </div>
           <div class="review-date">${formatDate(r.createdAt)}</div>
         </div>
         ${r.comment ? `<div class="review-comment">${escHtml(r.comment)}</div>` : '<div class="review-comment" style="color:var(--text-muted);font-style:italic">No comment left.</div>'}
       </div>
     `).join('');
-  } catch {
+  } catch (e) {
     showToast('Failed to load reviews', true);
     listEl.innerHTML = '<div class="no-reviews"><p>Failed to load reviews. Please try again.</p></div>';
   }
 }
 
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function clearFilters() {
   document.getElementById('ratingFilter').value = '';
+  document.getElementById('tableFilter').value = '';
   document.getElementById('fromDate').value = '';
   document.getElementById('toDate').value = '';
   loadReviews();
 }
 
+loadTableOptions();
 loadReviews();

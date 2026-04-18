@@ -39,6 +39,7 @@ export const tablesTable = pgTable("restaurant_tables", {
 export const ordersTable = pgTable("orders", {
   id: serial("id").primaryKey(),
   tableId: integer("table_id").notNull().references(() => tablesTable.id),
+  sessionId: text("session_id"),
   status: orderStatusEnum("status").notNull().default("pending"),
   paymentStatus: paymentStatusEnum("payment_status").notNull().default("pending"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0"),

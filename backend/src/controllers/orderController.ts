@@ -8,7 +8,11 @@ import {
 export async function listOrders(req: Request, res: Response): Promise<void> {
   const queryParams = GetOrdersQueryParams.safeParse(req.query);
   if (!queryParams.success) { res.status(400).json({ error: queryParams.error.message }); return; }
-  const orders = await orderService.listOrders(queryParams.data);
+  const orders = await orderService.listOrders({
+    tableId: queryParams.data.tableId,
+    sessionId: queryParams.data.sessionId,
+    status: queryParams.data.status,
+  });
   res.json(orders);
 }
 
@@ -17,7 +21,8 @@ export async function getCurrentOrder(req: Request, res: Response): Promise<void
   if (!Number.isInteger(tableId) || tableId <= 0) {
     res.status(400).json({ error: "Valid tableId is required" }); return;
   }
-  const order = await orderService.getCurrentOrder(tableId);
+  const sessionId = typeof req.query.sessionId === "string" ? req.query.sessionId : undefined;
+  const order = await orderService.getCurrentOrder(tableId, sessionId);
   if (!order) { res.status(204).send(); return; }
   res.json(order);
 }
@@ -26,7 +31,12 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
   const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   if (!parsed.data.items.length) { res.status(400).json({ error: "Order must contain at least one item" }); return; }
-  const result = await orderService.createOrder(parsed.data);
+  const result = await orderService.createOrder({
+    tableId: parsed.data.tableId,
+    sessionId: parsed.data.sessionId ?? null,
+    items: parsed.data.items,
+    specialInstructions: parsed.data.specialInstructions,
+  });
   if ("error" in result) { res.status(400).json({ error: result.error }); return; }
   res.status(201).json(result.order);
 }

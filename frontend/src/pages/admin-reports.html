@@ -18,6 +18,7 @@
     .bar-cell { min-width: 140px; }
     .bar-track { height: 8px; border-radius: 999px; background: #f3f0ec; overflow: hidden; }
     .bar-fill { height: 100%; border-radius: 999px; background: var(--primary); }
+    .section-title { font-size: 1rem; font-weight: 700; margin: 1.75rem 0 1rem; }
     @media (max-width: 680px) {
       .report-summary { grid-template-columns: 1fr; }
       .report-table { display: block; overflow-x: auto; }
@@ -70,6 +71,11 @@
         </section>
         <section class="card" style="overflow:hidden">
           <div id="reportRows"><div class="no-data">Loading report...</div></div>
+        </section>
+
+        <div class="section-title">Table Revenue</div>
+        <section class="card" style="overflow:hidden">
+          <div id="tableRevenueRows"><div class="no-data">Loading table revenue...</div></div>
         </section>
       </div>
     </main>

@@ -1,4 +1,4 @@
-import { eq, inArray, desc, sql } from "drizzle-orm";
+import { eq, inArray, desc, sql, and } from "drizzle-orm";
 import { db, ordersTable, orderItemsTable, menuItemsTable, tablesTable } from "../db/index";
 
 export const TAX_RATE = 0.18;
@@ -11,11 +11,15 @@ export async function getOrderWithItems(orderId: number) {
   return { ...order, tableNumber: table?.tableNumber ?? 0, items };
 }
 
-export async function listOrders(filters: { tableId?: number; status?: string }) {
+export async function listOrders(filters: { tableId?: number; sessionId?: string; status?: string }) {
+  const conditions = [];
+  if (filters.tableId !== undefined) conditions.push(eq(ordersTable.tableId, filters.tableId));
+  if (filters.sessionId) conditions.push(eq(ordersTable.sessionId, filters.sessionId));
+  if (filters.status) conditions.push(eq(ordersTable.status, filters.status as any));
+
   let query = db.select().from(ordersTable).$dynamic();
-  if (filters.tableId !== undefined) query = query.where(eq(ordersTable.tableId, filters.tableId));
-  if (filters.status) query = query.where(eq(ordersTable.status, filters.status as any));
-  const orders = await query.orderBy(ordersTable.createdAt);
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const orders = await query.orderBy(desc(ordersTable.createdAt));
 
   const tableIds = [...new Set(orders.map((o) => o.tableId))];
   const tables = tableIds.length > 0
@@ -40,11 +44,18 @@ export async function listOrders(filters: { tableId?: number; status?: string })
   }));
 }
 
-export async function getCurrentOrder(tableId: number) {
+export async function getCurrentOrder(tableId: number, sessionId?: string) {
+  const conditions = [
+    sql`table_id = ${tableId}`,
+    sql`payment_status = 'pending'`,
+    sql`status not in ('completed', 'cancelled')`,
+  ];
+  if (sessionId) conditions.push(sql`session_id = ${sessionId}`);
+
   const [order] = await db
     .select()
     .from(ordersTable)
-    .where(sql`table_id = ${tableId} and payment_status = 'pending' and status not in ('completed', 'cancelled')`)
+    .where(sql`${conditions.map(c => sql`(${c})`).reduce((a, b) => sql`${a} AND ${b}`)}`)
     .orderBy(desc(ordersTable.createdAt))
     .limit(1);
   if (!order) return null;
@@ -53,10 +64,11 @@ export async function getCurrentOrder(tableId: number) {
 
 export async function createOrder(data: {
   tableId: number;
+  sessionId?: string | null;
   items: { menuItemId: number; quantity: number; specialInstructions?: string | null }[];
   specialInstructions?: string | null;
 }) {
-  const { tableId, items, specialInstructions } = data;
+  const { tableId, sessionId, items, specialInstructions } = data;
 
   const [table] = await db.select().from(tablesTable).where(eq(tablesTable.id, tableId));
   if (!table) return { error: "Table not found" as const };
@@ -85,10 +97,14 @@ export async function createOrder(data: {
     });
   }
 
+  const sessionCondition = sessionId
+    ? sql`table_id = ${tableId} and session_id = ${sessionId} and payment_status = 'pending' and status not in ('completed', 'cancelled')`
+    : sql`table_id = ${tableId} and payment_status = 'pending' and status not in ('completed', 'cancelled')`;
+
   const [existingOrder] = await db
     .select()
     .from(ordersTable)
-    .where(sql`table_id = ${tableId} and payment_status = 'pending' and status not in ('completed', 'cancelled')`)
+    .where(sessionCondition)
     .orderBy(desc(ordersTable.createdAt))
     .limit(1);
 
@@ -115,6 +131,7 @@ export async function createOrder(data: {
   const tax = newSubtotal * TAX_RATE;
   const [order] = await db.insert(ordersTable).values({
     tableId,
+    sessionId: sessionId ?? null,
     status: "pending",
     paymentStatus: "pending",
     subtotal: newSubtotal.toFixed(2),
