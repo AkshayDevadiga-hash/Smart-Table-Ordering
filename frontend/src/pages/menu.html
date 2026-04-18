@@ -17,7 +17,15 @@
     .cart-count { background: rgba(255,255,255,0.25); border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.75rem; font-weight: 700; }
 
     .tabs-wrap { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 64px; z-index: 90; }
-    .tabs-wrap-inner { max-width: 780px; margin: 0 auto; padding: 0.75rem 1rem; }
+    .tabs-wrap-inner { max-width: 780px; margin: 0 auto; padding: 0.75rem 1rem 0; }
+
+    .search-filter-bar { display: flex; gap: 0.625rem; align-items: center; padding-bottom: 0.75rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 140px; height: 36px; border: 1.5px solid var(--border); border-radius: 999px; padding: 0 1rem; font-size: 0.875rem; background: var(--bg); color: var(--text); outline: none; }
+    .search-input:focus { border-color: var(--primary); }
+    .veg-toggle { display: flex; gap: 0.375rem; }
+    .veg-btn { height: 36px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--card); font-size: 0.8rem; font-weight: 600; padding: 0 0.875rem; cursor: pointer; color: var(--text-muted); white-space: nowrap; }
+    .veg-btn.active-veg { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; }
+    .veg-btn.active-nonveg { background: #fce4ec; border-color: #e91e63; color: #880e4f; }
 
     .menu-content { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 8rem; }
     .current-bill { max-width: 780px; margin: 1rem auto 0; padding: 0 1rem; }
@@ -59,6 +67,11 @@
     .special-instructions { margin: 1rem 0; }
     .cart-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
 
+    .menu-footer { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem; text-align: center; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+    .menu-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    .no-results { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+
     .hidden { display: none !important; }
     .sticky-cart { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 100; animation: slideUp 0.2s ease; }
     @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
@@ -88,6 +101,13 @@
 
   <div class="tabs-wrap">
     <div class="tabs-wrap-inner">
+      <div class="search-filter-bar">
+        <input type="search" class="search-input" id="searchInput" placeholder="🔍 Search menu…" oninput="renderMenu()" />
+        <div class="veg-toggle">
+          <button class="veg-btn" id="vegBtn" onclick="toggleVegFilter('veg')">🌿 Veg</button>
+          <button class="veg-btn" id="nonvegBtn" onclick="toggleVegFilter('nonveg')">🍗 Non-veg</button>
+        </div>
+      </div>
       <div class="tab-bar" id="categoryTabs"></div>
     </div>
   </div>
@@ -101,6 +121,10 @@
       <div class="skeleton" style="height:72px;margin-bottom:0.5rem"></div>
       <div class="skeleton" style="height:72px;margin-bottom:2rem"></div>
     </div>
+  </div>
+
+  <div class="menu-footer">
+    <a href="/about">About TableOrder</a> · Powered by QR ordering technology
   </div>
 
   <!-- Cart Drawer -->

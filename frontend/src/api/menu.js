@@ -4,6 +4,7 @@ let menuItems = [];
 let cart = {}; // itemId -> { item, qty }
 let activeCategory = null;
 let currentOrder = null;
+let vegFilter = 'all'; // 'all' | 'veg' | 'nonveg'
 const CART_KEY = 'tableorder-cart-' + tableId;
 const GST_RATE = 0.18;
 
@@ -111,13 +112,26 @@ function setActiveTab(el) {
   el.classList.add('active');
 }
 
+function toggleVegFilter(type) {
+  vegFilter = vegFilter === type ? 'all' : type;
+  document.getElementById('vegBtn').className = 'veg-btn' + (vegFilter === 'veg' ? ' active-veg' : '');
+  document.getElementById('nonvegBtn').className = 'veg-btn' + (vegFilter === 'nonveg' ? ' active-nonveg' : '');
+  renderMenu();
+}
+
 function renderMenu() {
   const container = document.getElementById('menuContent');
-  const filtered = activeCategory ? categories.filter(c => c.id === activeCategory) : categories;
+  const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  const catList = activeCategory ? categories.filter(c => c.id === activeCategory) : categories;
   container.innerHTML = '';
-  filtered.forEach(cat => {
-    const items = menuItems.filter(i => i.categoryId === cat.id);
+  let totalShown = 0;
+  catList.forEach(cat => {
+    let items = menuItems.filter(i => i.categoryId === cat.id);
+    if (vegFilter === 'veg') items = items.filter(i => i.isVeg);
+    if (vegFilter === 'nonveg') items = items.filter(i => !i.isVeg);
+    if (searchVal) items = items.filter(i => i.name.toLowerCase().includes(searchVal) || (i.description || '').toLowerCase().includes(searchVal));
     if (!items.length) return;
+    totalShown += items.length;
     const sec = document.createElement('div');
     sec.className = 'category-section';
     sec.id = 'cat-' + cat.id;
@@ -153,6 +167,9 @@ function renderMenu() {
     });
     container.appendChild(sec);
   });
+  if (totalShown === 0) {
+    container.innerHTML = '<div class="no-results"><div style="font-size:2.5rem;margin-bottom:0.75rem">🍽️</div><p>No items match your filters.</p><button class="btn btn-outline btn-sm" onclick="vegFilter=\'all\';document.getElementById(\'searchInput\').value=\'\';document.getElementById(\'vegBtn\').className=\'veg-btn\';document.getElementById(\'nonvegBtn\').className=\'veg-btn\';renderMenu()">Clear Filters</button></div>';
+  }
 }
 
 function addToCart(itemId) {
@@ -229,7 +246,10 @@ function renderCartDrawer() {
 
 async function placeOrder() {
   const items = Object.values(cart);
-  if (!items.length) return;
+  if (!items.length) {
+    showToast('Add items to your cart before placing an order.', true);
+    return;
+  }
   const btn = document.getElementById('placeOrderBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> Placing…';

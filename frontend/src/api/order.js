@@ -44,6 +44,58 @@ function timeAgo(dateStr) {
   return Math.floor(diff / 3600) + 'h ago';
 }
 
+function reviewKey() { return 'review-submitted-' + orderId; }
+function hasReviewSubmitted() { return !!localStorage.getItem(reviewKey()); }
+function markReviewSubmitted() { localStorage.setItem(reviewKey(), '1'); }
+
+function renderReviewForm() {
+  if (hasReviewSubmitted()) {
+    return `<div class="review-section">
+      <div class="status-message badge-green" style="margin-bottom:0;background:var(--secondary-light)">
+        ⭐ Thank you for your review!
+      </div>
+    </div>`;
+  }
+  return `<div class="review-section">
+    <h3 class="review-title">How was your experience?</h3>
+    <div class="star-rating" id="starRating">
+      ${[1,2,3,4,5].map(n => `<button class="star-btn" data-val="${n}" onclick="setRating(${n})">☆</button>`).join('')}
+    </div>
+    <textarea id="reviewComment" class="form-textarea" placeholder="Leave a comment… (optional, max 500 chars)" rows="3" maxlength="500"></textarea>
+    <button class="btn btn-primary" style="width:100%" id="submitReviewBtn" onclick="submitReview()">Submit Review</button>
+  </div>`;
+}
+
+function setRating(val) {
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.textContent = i < val ? '⭐' : '☆';
+    btn.classList.toggle('active', i < val);
+  });
+  document.getElementById('starRating').dataset.rating = val;
+}
+
+async function submitReview() {
+  const rating = parseInt(document.getElementById('starRating').dataset.rating || '0');
+  if (!rating) { showToast('Please select a star rating.', true); return; }
+  const comment = document.getElementById('reviewComment').value.trim() || null;
+  const btn = document.getElementById('submitReviewBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  try {
+    await api('/reviews', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, rating, comment }),
+    });
+    markReviewSubmitted();
+    showToast('Thank you for your review!');
+    renderContent(order);
+  } catch {
+    showToast('Failed to submit review. Please try again.', true);
+    btn.disabled = false;
+    btn.textContent = 'Submit Review';
+  }
+}
+
 function renderContent(o) {
   const stepIdx = STATUS_STEPS.indexOf(o.status);
   const meta = STATUS_MESSAGES[o.status] || STATUS_MESSAGES.pending;
@@ -69,6 +121,24 @@ function renderContent(o) {
   const tax = safeNumber(o.tax);
   const total = safeNumber(o.total);
   const paymentStatus = o.paymentStatus || 'pending';
+  const canCancel = o.status === 'pending' || o.status === 'received';
+  const showReview = (o.status === 'delivered' || paymentStatus === 'paid') && o.status !== 'cancelled';
+
+  let paymentSection = '';
+  if (o.status === 'cancelled') {
+    paymentSection = '';
+  } else if (paymentStatus === 'paid') {
+    paymentSection = `
+      <div class="payment-success">
+        <div class="payment-success-icon">✅</div>
+        <div>
+          <div class="payment-success-title">Payment Successful</div>
+          <div class="payment-success-sub">Total paid: ${money(total)}</div>
+        </div>
+      </div>`;
+  } else {
+    paymentSection = `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>`;
+  }
 
   document.getElementById('content').innerHTML = `
     <div class="status-message ${meta.class}" style="background:var(--primary-light)">
@@ -98,8 +168,12 @@ function renderContent(o) {
         </div>
       </div>
       ${o.specialInstructions ? `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-muted)">📝 ${o.specialInstructions}</div>` : ''}
-      ${o.status === 'cancelled' ? '' : paymentStatus !== 'paid' ? `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>` : '<div class="status-message badge-green" style="margin-top:1rem;margin-bottom:0;background:var(--secondary-light)">Payment completed. Thank you.</div>'}
+      ${paymentSection}
+      ${canCancel ? `<button class="btn btn-outline" style="width:100%;margin-top:0.75rem;color:var(--destructive);border-color:var(--destructive)" onclick="confirmCancel()">Cancel Order</button>` : ''}
     </div>
+
+    ${showReview ? renderReviewForm() : ''}
+
     ${o.status !== 'delivered' && o.status !== 'cancelled'
       ? '<div class="refresh-hint">🔄 Auto-refreshing every 5 seconds…</div>'
       : ''}
@@ -113,9 +187,37 @@ async function payOrder() {
       body: JSON.stringify({ paymentStatus: 'paid' }),
     });
     renderContent(order);
-    showToast('Payment completed');
+    showToast('Payment completed! Thank you.');
   } catch {
     showToast('Payment failed. Please try again.', true);
+  }
+}
+
+function confirmCancel() {
+  document.getElementById('cancelModal').classList.remove('hidden');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelModal').classList.add('hidden');
+}
+
+async function cancelOrder() {
+  const btn = document.getElementById('confirmCancelBtn');
+  btn.disabled = true;
+  btn.textContent = 'Cancelling…';
+  try {
+    order = await api('/orders/' + orderId, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
+    closeCancelModal();
+    clearInterval(interval);
+    renderContent(order);
+    showToast('Order cancelled successfully.');
+  } catch {
+    showToast('Could not cancel order. Please try again.', true);
+    btn.disabled = false;
+    btn.textContent = 'Yes, Cancel Order';
   }
 }
 

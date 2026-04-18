@@ -59,6 +59,16 @@ export const orderItemsTable = pgTable("order_items", {
   specialInstructions: text("special_instructions"),
 });
 
+export const reviewsTable = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => ordersTable.id),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Review = typeof reviewsTable.$inferSelect;
+
 export const insertMenuCategorySchema = createInsertSchema(menuCategoriesTable).omit({ id: true, createdAt: true });
 export const insertMenuItemSchema = createInsertSchema(menuItemsTable).omit({ id: true, createdAt: true });
 export const insertTableSchema = createInsertSchema(tablesTable).omit({ id: true, createdAt: true });
