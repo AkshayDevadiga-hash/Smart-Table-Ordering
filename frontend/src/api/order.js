@@ -13,6 +13,9 @@ const STATUS_MESSAGES = {
 let order = null;
 let interval = null;
 
+let selectedRating = 0;
+let reviewDraft = '';
+
 function money(value) {
   const amount = Number(value);
   return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
@@ -44,6 +47,69 @@ function timeAgo(dateStr) {
   return Math.floor(diff / 3600) + 'h ago';
 }
 
+function reviewKey() { return 'review-submitted-' + orderId; }
+function hasReviewSubmitted() { return !!localStorage.getItem(reviewKey()); }
+function markReviewSubmitted() { localStorage.setItem(reviewKey(), '1'); }
+
+function renderReviewForm() {
+  if (hasReviewSubmitted()) {
+    return `<div class="review-section">
+      <div class="status-message badge-green" style="margin-bottom:0;background:var(--secondary-light)">
+        ⭐ Thank you for your review!
+      </div>
+    </div>`;
+  }
+  const starsHtml = [1,2,3,4,5].map(n =>
+    `<button class="star-btn${n <= selectedRating ? ' active' : ''}" data-val="${n}" onclick="setRating(${n})">${n <= selectedRating ? '⭐' : '☆'}</button>`
+  ).join('');
+  return `<div class="review-section">
+    <h3 class="review-title">How was your experience?</h3>
+    <div class="star-rating" id="starRating" data-rating="${selectedRating}">
+      ${starsHtml}
+    </div>
+    <textarea id="reviewComment" class="form-textarea" placeholder="Leave a comment… (optional, max 500 chars)" rows="3" maxlength="500" oninput="reviewDraft=this.value">${reviewDraft ? reviewDraft.replace(/</g,'&lt;') : ''}</textarea>
+    <button class="btn btn-primary" style="width:100%" id="submitReviewBtn" onclick="submitReview()">Submit Review</button>
+  </div>`;
+}
+
+function setRating(val) {
+  selectedRating = val;
+  const container = document.getElementById('starRating');
+  if (container) {
+    container.dataset.rating = val;
+    container.querySelectorAll('.star-btn').forEach((btn, i) => {
+      btn.textContent = i < val ? '⭐' : '☆';
+      btn.classList.toggle('active', i < val);
+    });
+  }
+}
+
+async function submitReview() {
+  if (!selectedRating) { showToast('Please select a star rating.', true); return; }
+  const comment = reviewDraft.trim() || null;
+  if (comment && comment.length > 500) { showToast('Comment must be 500 characters or fewer.', true); return; }
+  const btn = document.getElementById('submitReviewBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  try {
+    await api('/reviews', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, rating: selectedRating, comment }),
+    });
+    markReviewSubmitted();
+    selectedRating = 0;
+    reviewDraft = '';
+    showToast('Thank you for your review!');
+    renderContent(order);
+  } catch (e) {
+    let msg = 'Failed to submit review. Please try again.';
+    try { const parsed = JSON.parse(e.message); if (parsed.error) msg = parsed.error; } catch {}
+    showToast(msg, true);
+    btn.disabled = false;
+    btn.textContent = 'Submit Review';
+  }
+}
+
 function renderContent(o) {
   const stepIdx = STATUS_STEPS.indexOf(o.status);
   const meta = STATUS_MESSAGES[o.status] || STATUS_MESSAGES.pending;
@@ -69,6 +135,24 @@ function renderContent(o) {
   const tax = safeNumber(o.tax);
   const total = safeNumber(o.total);
   const paymentStatus = o.paymentStatus || 'pending';
+  const canCancel = (o.status === 'pending' || o.status === 'received') && paymentStatus !== 'paid';
+  const showReview = (o.status === 'delivered' || paymentStatus === 'paid') && o.status !== 'cancelled';
+
+  let paymentSection = '';
+  if (o.status === 'cancelled') {
+    paymentSection = '';
+  } else if (paymentStatus === 'paid') {
+    paymentSection = `
+      <div class="payment-success">
+        <div class="payment-success-icon">✅</div>
+        <div>
+          <div class="payment-success-title">Payment Successful</div>
+          <div class="payment-success-sub">Total paid: ${money(total)}</div>
+        </div>
+      </div>`;
+  } else {
+    paymentSection = `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>`;
+  }
 
   document.getElementById('content').innerHTML = `
     <div class="status-message ${meta.class}" style="background:var(--primary-light)">
@@ -86,7 +170,7 @@ function renderContent(o) {
         </div>
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
           <span class="badge badge-${getStatusBadge(o.status)}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
-          <span class="badge ${paymentStatus === 'paid' ? 'badge-green' : 'badge-yellow'}">${paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}</span>
+          ${o.status !== 'cancelled' ? `<span class="badge ${paymentStatus === 'paid' ? 'badge-green' : 'badge-yellow'}">${paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}</span>` : ''}
         </div>
       </div>
       <div class="order-items-list">
@@ -98,8 +182,12 @@ function renderContent(o) {
         </div>
       </div>
       ${o.specialInstructions ? `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-muted)">📝 ${o.specialInstructions}</div>` : ''}
-      ${paymentStatus !== 'paid' ? `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>` : '<div class="status-message badge-green" style="margin-top:1rem;margin-bottom:0;background:var(--secondary-light)">Payment completed. Thank you.</div>'}
+      ${paymentSection}
+      ${canCancel ? `<button class="btn btn-outline" style="width:100%;margin-top:0.75rem;color:var(--destructive);border-color:var(--destructive)" onclick="confirmCancel()">Cancel Order</button>` : ''}
     </div>
+
+    ${showReview ? renderReviewForm() : ''}
+
     ${o.status !== 'delivered' && o.status !== 'cancelled'
       ? '<div class="refresh-hint">🔄 Auto-refreshing every 5 seconds…</div>'
       : ''}
@@ -113,9 +201,39 @@ async function payOrder() {
       body: JSON.stringify({ paymentStatus: 'paid' }),
     });
     renderContent(order);
-    showToast('Payment completed');
+    showToast('Payment completed! Thank you.');
   } catch {
     showToast('Payment failed. Please try again.', true);
+  }
+}
+
+function confirmCancel() {
+  document.getElementById('cancelModal').classList.remove('hidden');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelModal').classList.add('hidden');
+}
+
+async function cancelOrder() {
+  const btn = document.getElementById('confirmCancelBtn');
+  btn.disabled = true;
+  btn.textContent = 'Cancelling…';
+  try {
+    order = await api('/orders/' + orderId, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
+    closeCancelModal();
+    clearInterval(interval);
+    renderContent(order);
+    showToast('Order cancelled successfully.');
+  } catch (e) {
+    let msg = 'Could not cancel order. Please try again.';
+    try { const parsed = JSON.parse(e.message); if (parsed.error) msg = parsed.error; } catch {}
+    showToast(msg, true);
+    btn.disabled = false;
+    btn.textContent = 'Yes, Cancel Order';
   }
 }
 

@@ -6,5 +6,6 @@ const router: Router = Router();
 router.get("/admin/stats", adminController.getStats);
 router.get("/admin/reports", adminController.getReports);
 router.get("/admin/recent-orders", adminController.getRecentOrders);
+router.get("/admin/table-revenue", adminController.getTableRevenue);
 
 export default router;

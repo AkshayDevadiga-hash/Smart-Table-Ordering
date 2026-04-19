@@ -1,0 +1,166 @@
+### 🛠️ Bug Fix & UI Improvement Prompt – Smart Restaurant System
+
+Fix the following issues and improve system behavior, UI, and data consistency:
+
+---
+
+## 1. ❌ Review System Issues (Critical)
+
+### Problems:
+
+* Input fields clear automatically while typing
+* Review not stored in database
+* Reviews not visible on admin page
+
+### Fix:
+
+* Ensure form inputs (rating + comment) are **properly controlled**
+
+  * Do not reset state on each keystroke
+* On submit:
+
+  * Call `POST /api/reviews` with:
+
+    * `order_id`
+    * `rating`
+    * `comment`
+* Validate:
+
+  * Rating (1–5 required)
+  * Comment ≤ 500 characters
+* After success:
+
+  * Show confirmation message
+  * Disable resubmission
+
+### Admin:
+
+* Ensure `/admin/reviews`:
+
+  * Calls `GET /api/reviews`
+  * Displays rating, comment, date correctly
+* Fix any field mismatch (`order_id` vs `orderId`)
+
+---
+
+## 2. 📄 About Page Visibility Fix
+
+### Problem:
+
+* About link is placed at bottom and not noticeable
+
+### Fix:
+
+* Move "About" link to:
+
+  * Top navigation bar (header)
+  * OR clearly visible menu section
+* Ensure easy navigation back to main menu
+
+---
+
+## 3. ❌ Cancel Order Logic Bug (High Priority)
+
+### Problem:
+
+* Users can cancel after payment
+* Admin sees invalid state: `cancelled + paid`
+* No refund handling
+
+### Fix Rules:
+
+#### Do NOT allow cancel if:
+
+* `payment_status = paid`
+* OR `status = preparing | ready | delivered | completed`
+
+### Frontend:
+
+* Hide or disable “Cancel Order” button in these cases
+
+### Backend:
+
+* Add validation in `PATCH /api/orders/:id`:
+
+  ```
+  if (order.payment_status === "paid") {
+    return error "Cannot cancel after payment"
+  }
+  ```
+* Ensure consistent order state
+
+---
+
+## 4. 📜 Customer Order History (Session-Based)
+
+### Requirement:
+
+* Show list of orders for current table/session
+
+### Implementation:
+
+#### Frontend:
+
+* Add section: “Your Orders”
+* Fetch:
+
+  * `GET /api/orders?tableId=X`
+* Display:
+
+  * Order ID
+  * Items
+  * Status
+  * Total amount
+
+### Behavior:
+
+* Orders persist during session
+* Reset when:
+
+  * session expires OR
+  * QR is scanned again
+
+---
+
+## 5. ⚠️ Form Stability Fix
+
+* Prevent form reset while typing
+* Avoid unnecessary re-render
+* Use proper input handling (`oninput` / `onchange`)
+
+---
+
+## 6. 🎨 Admin Navbar UI Cleanup
+
+### Problem:
+
+* Emojis in admin navbar reduce professionalism
+
+### Fix:
+
+* Remove all emojis/icons from admin navigation bar
+* Replace with:
+
+  * Clean text labels (e.g., Dashboard, Menu, Tables, Reports)
+* Maintain consistent spacing and alignment
+* Keep UI minimal and professional
+
+---
+
+## 7. ⚠️ General Debug Checklist
+
+* Check browser console for errors
+* Verify API request payloads
+* Confirm DB inserts/updates
+* Log backend responses for debugging
+
+---
+
+### Goal:
+
+* Fix critical bugs (reviews, cancel logic)
+* Improve UI clarity and professionalism
+* Ensure consistent and valid data flow
+* Enhance user experience
+
+---

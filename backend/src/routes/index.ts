@@ -7,6 +7,7 @@ import ordersRouter from "./orders";
 import kitchenRouter from "./kitchen";
 import adminRouter from "./admin";
 import authRouter from "./auth";
+import reviewsRouter from "./reviews";
 
 const router: Router = Router();
 
@@ -18,5 +19,6 @@ router.use(tablesRouter);
 router.use(ordersRouter);
 router.use(kitchenRouter);
 router.use(adminRouter);
+router.use(reviewsRouter);
 
 export default router;

@@ -39,6 +39,7 @@ export const tablesTable = pgTable("restaurant_tables", {
 export const ordersTable = pgTable("orders", {
   id: serial("id").primaryKey(),
   tableId: integer("table_id").notNull().references(() => tablesTable.id),
+  sessionId: text("session_id"),
   status: orderStatusEnum("status").notNull().default("pending"),
   paymentStatus: paymentStatusEnum("payment_status").notNull().default("pending"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0"),
@@ -58,6 +59,16 @@ export const orderItemsTable = pgTable("order_items", {
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
   specialInstructions: text("special_instructions"),
 });
+
+export const reviewsTable = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => ordersTable.id),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Review = typeof reviewsTable.$inferSelect;
 
 export const insertMenuCategorySchema = createInsertSchema(menuCategoriesTable).omit({ id: true, createdAt: true });
 export const insertMenuItemSchema = createInsertSchema(menuItemsTable).omit({ id: true, createdAt: true });

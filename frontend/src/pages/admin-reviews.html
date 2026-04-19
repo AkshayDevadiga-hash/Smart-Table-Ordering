@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reviews — TableOrder</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 1.5rem; }
+    .filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .filter-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+    .filter-select, .filter-input { height: 36px; border: 1.5px solid var(--border); border-radius: 8px; padding: 0 0.75rem; font-size: 0.875rem; background: var(--card); color: var(--text); }
+    .review-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 0.875rem; }
+    .review-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+    .review-stars { font-size: 1.125rem; letter-spacing: 1px; }
+    .review-date { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
+    .review-order { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.375rem; }
+    .review-comment { font-size: 0.9rem; color: var(--text); line-height: 1.6; }
+    .no-reviews { text-align: center; padding: 3rem; color: var(--text-muted); }
+    .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .stat-pill { background: var(--primary-light); color: var(--primary); border-radius: 999px; padding: 0.375rem 1rem; font-size: 0.875rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-icon">🍽️</span>
+        <span class="sidebar-brand-name">TableOrder</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="sidebar-link">Dashboard</a>
+        <a href="/admin/menu" class="sidebar-link">Menu</a>
+        <a href="/admin/tables" class="sidebar-link">Tables</a>
+        <a href="/admin/reports" class="sidebar-link">Reports</a>
+        <a href="/admin/reviews" class="sidebar-link active">Reviews</a>
+        <a href="/kitchen" class="sidebar-link">Kitchen</a>
+      </nav>
+      <button class="sidebar-logout" onclick="logout('/admin/login')">↩ Sign Out</button>
+    </aside>
+
+    <div class="admin-mobile-nav">
+      <a href="/admin" class="mobile-nav-link">Dashboard</a>
+      <a href="/admin/menu" class="mobile-nav-link">Menu</a>
+      <a href="/admin/tables" class="mobile-nav-link">Tables</a>
+      <a href="/admin/reports" class="mobile-nav-link">Reports</a>
+      <a href="/admin/reviews" class="mobile-nav-link active">Reviews</a>
+    </div>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <h1 class="admin-page-title">Customer Reviews</h1>
+        <button class="btn btn-outline btn-sm" onclick="logout('/admin/login')">Sign Out</button>
+      </div>
+
+      <div class="admin-content">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">Rating</label>
+            <select class="filter-select" id="ratingFilter" onchange="loadReviews()">
+              <option value="">All Ratings</option>
+              <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+              <option value="4">⭐⭐⭐⭐ (4)</option>
+              <option value="3">⭐⭐⭐ (3)</option>
+              <option value="2">⭐⭐ (2)</option>
+              <option value="1">⭐ (1)</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Table</label>
+            <select class="filter-select" id="tableFilter" onchange="loadReviews()">
+              <option value="">All Tables</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">From Date</label>
+            <input type="date" class="filter-input" id="fromDate" onchange="loadReviews()" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">To Date</label>
+            <input type="date" class="filter-input" id="toDate" onchange="loadReviews()" />
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="clearFilters()">Clear</button>
+        </div>
+
+        <div id="statsRow" class="stats-row"></div>
+        <div id="reviewsList">
+          <div class="card skeleton" style="height:100px;margin-bottom:0.875rem"></div>
+          <div class="card skeleton" style="height:100px;margin-bottom:0.875rem"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/config.js"></script>
+  <script src="/api-base.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>requireAdminAuth();</script>
+  <script src="/js/admin-reviews.js"></script>
+</body>
+</html>

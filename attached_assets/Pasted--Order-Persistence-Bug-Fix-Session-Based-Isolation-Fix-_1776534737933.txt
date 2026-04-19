@@ -1,0 +1,150 @@
+### 🛠️ Order Persistence Bug Fix – Session-Based Isolation
+
+Fix the issue where previous customer orders are visible to new customers on the same table.
+
+---
+
+## 1. ❌ Problem
+
+* Orders are fetched using only `table_id`
+* When a new customer scans the same QR:
+
+  * They can see previous customer’s orders
+* This causes:
+
+  * ❌ Privacy issue
+  * ❌ Incorrect UX
+  * ❌ Data confusion
+
+---
+
+## 2. ✅ Solution: Introduce Session-Based Orders
+
+Instead of relying only on `table_id`, implement a **session system**.
+
+---
+
+## 3. 🔑 Session Implementation
+
+### On QR Scan (`/menu?tableId=X`):
+
+* Generate a unique `session_id` (UUID or random string)
+* Store it in:
+
+  * `localStorage` (frontend)
+* Send it with every API request
+
+---
+
+### Order Creation:
+
+* Modify `POST /api/orders` to include:
+
+  * `session_id`
+
+* Store `session_id` in `orders` table:
+
+```id="i9u2z7"
+session_id TEXT
+```
+
+---
+
+### Fetch Orders:
+
+Instead of:
+
+```id="l6d4pf"
+GET /api/orders?tableId=1
+```
+
+Use:
+
+```id="9v1kqj"
+GET /api/orders?session_id=xyz123
+```
+
+👉 This ensures:
+
+* Only current customer’s orders are shown
+
+---
+
+## 4. 🧹 Clear Old Session on New Visit
+
+### When page loads:
+
+* Check:
+
+  * If no active order OR session expired
+* Generate new `session_id`
+
+### Optional:
+
+* Add timeout (30–60 min inactivity)
+
+---
+
+## 5. 🚫 Prevent Old Orders Showing
+
+### Backend:
+
+* Always filter orders by:
+
+```id="flwbqq"
+WHERE session_id = current_session_id
+```
+
+NOT just `table_id`
+
+---
+
+## 6. 🪑 Table Reset Logic (Optional but Good)
+
+When:
+
+* Order is completed AND paid
+
+Then:
+
+* Mark table as:
+
+  * `available`
+* Clear active session
+
+---
+
+## 7. ⚠️ Frontend Fix
+
+* On page refresh:
+
+  * Load orders using `session_id`
+* If no session:
+
+  * Show empty state:
+
+    * “No active orders”
+
+---
+
+## 8. 🧪 Edge Cases to Handle
+
+* New customer scans QR:
+
+  * Should NOT see previous orders
+* Same customer refresh:
+
+  * Should still see their orders
+* Session expired:
+
+  * Start fresh
+
+---
+
+## 9. 🎯 Goal
+
+* Ensure **data isolation per customer session**
+* Prevent **order leakage across users**
+* Improve **privacy and correctness**
+
+---

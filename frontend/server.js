@@ -40,7 +40,9 @@ function resolveHtmlFile(pathname) {
   if (pathname === "/admin/menu") return "admin-menu.html";
   if (pathname === "/admin/tables") return "admin-tables.html";
   if (pathname === "/admin/reports") return "admin-reports.html";
+  if (pathname === "/admin/reviews") return "admin-reviews.html";
   if (pathname === "/admin") return "admin.html";
+  if (pathname === "/about") return "about.html";
   return null;
 }
 

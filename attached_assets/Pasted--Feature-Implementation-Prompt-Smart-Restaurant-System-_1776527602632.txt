@@ -1,0 +1,151 @@
+### 🔧 Feature Implementation Prompt – Smart Restaurant System
+
+Enhance the existing Smart Restaurant Ordering System by implementing the following features and improvements:
+
+---
+
+## 1. ⭐ Customer Reviews System (UI + Flow)
+
+### Customer Side:
+
+* After order status becomes **"delivered" OR payment is completed**, show a **review form**
+* Fields:
+
+  * Rating (1–5 stars, required)
+  * Comment (optional, max 500 chars)
+* Submit via:
+
+  * `POST /api/reviews`
+* Ensure:
+
+  * Only **one review per order**
+  * Show success message after submission
+* Redirect user back to menu or show “Thank you” screen
+
+### Admin Side:
+
+* Create a new page: `/admin/reviews`
+* Fetch reviews using:
+
+  * `GET /api/reviews`
+* Display:
+
+  * Rating ⭐
+  * Comment
+  * Date
+* Add filters:
+
+  * By rating (1–5)
+  * By date range
+
+---
+
+## 2. 📄 About Page (Customer UI)
+
+* Create `/about` page
+* Add link/button in menu page (footer or header)
+* Include:
+
+  * Project/restaurant description
+  * Key features (QR ordering, live tracking, etc.)
+  * Contact info (optional)
+
+---
+
+## 3. ❌ Cancel Order (Customer Side)
+
+* Add **“Cancel Order” button** on `/order/:orderId` page
+* Only show button when:
+
+  * Status = `pending` OR `received`
+* On click:
+
+  * Show confirmation popup: “Are you sure you want to cancel?”
+  * Call:
+
+    * `PATCH /api/orders/:id` → update status to `cancelled`
+* After cancel:
+
+  * Show message: “Order cancelled successfully”
+  * Disable further actions
+* Ensure:
+
+  * Cancel is NOT allowed after `preparing` stage
+
+---
+
+## 4. 📊 Order Status UI Improvement
+
+* Replace plain text status with **visual progress indicator**
+* Example steps:
+
+  * Received → Preparing → Ready → Delivered
+* Highlight current step
+* Update dynamically based on polling
+
+---
+
+## 5. ⚠️ Error Handling & Alerts
+
+* Add user feedback for:
+
+  * Order placed successfully
+  * Review submitted
+  * Errors (API failure)
+* Use:
+
+  * Alert bar / toast messages
+
+---
+
+## 6. ⏳ Loading States
+
+* Show loader/spinner when:
+
+  * Fetching menu
+  * Placing order
+  * Submitting review
+* Disable buttons during API calls
+
+---
+
+## 7. 🪑 Table Info Display
+
+* Show table number clearly on menu and order pages:
+
+  * Example: “Table No: 5”
+
+---
+
+## 8. 🛒 Cart Validation
+
+* Prevent placing order if cart is empty
+* Show message: “Add items before placing order”
+
+---
+
+## 9. 💰 Payment Confirmation UI
+
+* After payment:
+
+  * Show confirmation screen:
+
+    * “Payment Successful”
+    * Order completed
+* Option to return to menu
+
+---
+
+## 10. ✨ Optional Enhancements (if time permits)
+
+* Veg / Non-veg filter toggle
+* Search bar for menu items
+* Dark mode UI
+
+---
+
+### Goal:
+
+Improve overall **user experience, completeness, and presentation quality** of the system while keeping backend APIs unchanged.
+
+---

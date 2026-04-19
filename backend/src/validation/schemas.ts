@@ -47,10 +47,12 @@ export const GetTableParams = zod.object({ tableId: zod.coerce.number() });
 
 export const GetOrdersQueryParams = zod.object({
   tableId: zod.coerce.number().optional(),
+  sessionId: zod.string().optional(),
   status: zod.enum(["pending","received","preparing","ready","delivered","completed","cancelled"]).optional(),
 });
 export const CreateOrderBody = zod.object({
   tableId: zod.number(),
+  sessionId: zod.string().nullish(),
   items: zod.array(zod.object({
     menuItemId: zod.number(),
     quantity: zod.number(),
