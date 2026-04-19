@@ -1,5 +1,5 @@
 async function api(path, opts) {
-  const token = localStorage.getItem('adminToken');
+  const token = getToken();
   const res = await fetch(apiUrl(path), {
     headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
     ...opts,
