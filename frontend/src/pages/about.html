@@ -11,10 +11,11 @@
     .wrap { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
 
     .hero { text-align: center; margin-bottom: 3rem; position: relative; }
-    .hero-img-wrap { width: 100%; height: 240px; border-radius: var(--radius); overflow: hidden; margin-bottom: 2rem; background: var(--card); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
-    .hero-img-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; }
-    .hero-img-icon { font-size: 48px; }
-    .restaurant-badge { display: inline-block; background: var(--primary-light); color: var(--text-primary); font-size: 11px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius); margin-bottom: 1rem; letter-spacing: 0.5px; text-transform: uppercase; }
+    .hero-img-wrap { width: 100%; height: 300px; overflow: hidden; border-radius: 12px; }
+    .hero-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-img-placeholder, .hero-img-icon { width: 100%; height: 100%; margin: 0; padding: 0; }
+    .hero-img-icon img { width: 100%; height: auto; max-height: 320px; object-fit: cover; border-radius: 12px; }
+    .restaurant-badge { display: inline-block; background: var(--primary-light); color: var(--text-primary); font-size: 11px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius); margin-bottom: 1rem; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 30px; }
     .hero-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem; }
     .hero-tagline { color: var(--text-muted); font-size: 1rem; line-height: 1.7; max-width: 480px; margin: 0 auto; }
 
@@ -24,15 +25,116 @@
     .story-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; line-height: 1.8; color: var(--text-muted); font-size: 0.9375rem; }
 
     .chef-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; gap: 1.25rem; align-items: flex-start; }
-    .chef-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: var(--text-primary); flex-shrink: 0; border: 1px solid var(--border); }
+    .chef-avatar { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: block; }
+    .chef-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .chef-name { font-size: 1.0625rem; font-weight: 700; margin-bottom: 2px; }
     .chef-role { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.625rem; }
     .chef-bio { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
 
+    /* ── DESKTOP GRID GALLERY ── */
     .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-    .gallery-item { aspect-ratio: 4/3; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted); overflow: hidden; }
+    .gallery-item {
+      aspect-ratio: 4/3; border-radius: var(--radius); background: var(--card);
+      border: 1px solid var(--border); display: flex; align-items: center;
+      justify-content: center; overflow: hidden; cursor: pointer; position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .gallery-item:hover { transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-item .overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s ease;
+    }
+    .gallery-item:hover .overlay { opacity: 1; }
+    .overlay-icon { color: #fff; font-size: 26px; line-height: 1; }
     .gallery-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-align: center; }
 
+    /* ── MOBILE CIRCLE SLIDESHOW ── */
+    .mobile-gallery { display: none; flex-direction: column; align-items: center; gap: 1.25rem; }
+
+    .mobile-main-img {
+      width: 100%; border-radius: 16px; overflow: hidden;
+      aspect-ratio: 4/3; position: relative;
+    }
+    .mobile-main-img img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      position: absolute; inset: 0; border-radius: 16px;
+      opacity: 0; transform: scale(0.95);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .mobile-main-img img.visible { opacity: 1; transform: scale(1); }
+
+    .mobile-caption {
+      font-size: 13px; color: var(--text-muted); text-align: center;
+      min-height: 20px; transition: opacity 0.25s ease;
+    }
+
+    .circle-track { display: flex; gap: 18px; align-items: center; justify-content: center; padding: 8px 0 4px; }
+    .circle-thumb {
+      width: 72px; height: 72px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+      border: 3px solid transparent; cursor: pointer;
+      opacity: 0.5; transform: scale(0.82);
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+    .circle-thumb.active {
+      border-color: var(--primary, #c8a45a);
+      opacity: 1; transform: scale(1.18);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+    .circle-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .mobile-dots { display: flex; gap: 7px; justify-content: center; }
+    .mobile-dot {
+      width: 6px; height: 6px; border-radius: 50%; cursor: pointer;
+      background: var(--border); transition: background 0.25s, transform 0.25s;
+    }
+    .mobile-dot.active { background: var(--primary, #c8a45a); transform: scale(1.5); }
+
+    /* ── DESKTOP LIGHTBOX ── */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.82);
+      align-items: center; justify-content: center;
+    }
+    .lightbox.open { display: flex; animation: lbFadeIn 0.22s ease; }
+    @keyframes lbFadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+    .lb-inner {
+      position: relative; max-width: 88vw; max-height: 88vh;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .lb-img-wrap { border-radius: 16px; overflow: hidden; }
+    .lb-img-wrap.pop { animation: lbPop 0.3s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes lbPop { from { transform: scale(0.80); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+    .lb-img-wrap img { display: block; max-width: 80vw; max-height: 72vh; object-fit: contain; border-radius: 16px; }
+    .lb-caption { color: #fff; font-size: 14px; opacity: 0.75; }
+    .lb-close {
+      position: absolute; top: -14px; right: -14px;
+      width: 36px; height: 36px; border-radius: 50%; background: #fff;
+      border: none; cursor: pointer; font-size: 20px; line-height: 1;
+      display: flex; align-items: center; justify-content: center; color: #222;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.15s;
+    }
+    .lb-close:hover { transform: scale(1.1); }
+    .lb-arrow {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); color: #fff; border: none;
+      cursor: pointer; font-size: 22px; width: 46px; height: 46px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; backdrop-filter: blur(4px);
+    }
+    .lb-arrow:hover { background: rgba(255,255,255,0.3); }
+    .lb-prev { left: 16px; }
+    .lb-next { right: 16px; }
+    .lb-dots { display: flex; gap: 8px; }
+    .lb-dot {
+      width: 8px; height: 8px; border-radius: 50%; cursor: pointer;
+      background: rgba(255,255,255,0.35); transition: background 0.2s, transform 0.2s;
+    }
+    .lb-dot.active { background: #fff; transform: scale(1.35); }
+
+    /* ── INFO / CONTACT ── */
     .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
     .info-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
     .info-card-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
@@ -44,15 +146,20 @@
     .contact-icon { width: 32px; height: 32px; background: var(--primary-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
 
     .btn-primary { display: inline-block; padding: 0.625rem 1.5rem; background: var(--text-primary); color: var(--bg); border-radius: var(--radius); font-size: 0.9375rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; }
-
     .header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 0; background: var(--bg); }
     .header-title { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .btn-outline { padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; background: transparent; color: var(--text-primary); cursor: pointer; text-decoration: none; font-weight: 600; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .gallery { display: none; }
+      .mobile-gallery { display: flex; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="header-title"><img src="/logo.png" alt="Saffron House" style="height:30px;width:auto" /></div>
+    <div class="header-title"><img src="/logo.png" alt="Saffron House" style="height:38px;width:auto;padding-left:30px;" /></div>
     <a href="/menu.html" class="btn-outline">Home</a>
   </div>
 
@@ -61,8 +168,7 @@
     <div class="hero">
       <div class="hero-img-wrap">
         <div class="hero-img-placeholder">
-          <div class="hero-img-icon">🏛️</div>
-          <span>Restaurant exterior photo</span>
+          <div class="hero-img-icon"><img src="/exterior.png" alt="Restaurant exterior photo"></div>
         </div>
       </div>
       <div class="restaurant-badge">Est. 2012 · Bengaluru</div>
@@ -80,7 +186,7 @@
     <div class="section">
       <h2 class="section-title">Meet the chef</h2>
       <div class="chef-card">
-        <div class="chef-avatar">AR</div>
+        <div class="chef-avatar"><img src="/chef.jpg" alt="Chef Arjun Rao"></div>
         <div>
           <div class="chef-name">Chef Arjun Rao</div>
           <div class="chef-role">Executive Chef & Culinary Director</div>
@@ -91,18 +197,49 @@
 
     <div class="section">
       <h2 class="section-title">The space</h2>
+
+      <!-- DESKTOP: hover-to-enlarge grid + lightbox on click -->
       <div class="gallery">
         <div>
-          <div class="gallery-item">🪑</div>
+          <div class="gallery-item" data-index="0">
+            <img src="/dininghall.png" alt="Main dining hall">
+            <div class="overlay"><span class="overlay-icon">&#x26F6;</span></div>
+          </div>
           <div class="gallery-label">Main dining hall</div>
         </div>
         <div>
-          <div class="gallery-item">🌿</div>
+          <div class="gallery-item" data-index="1">
+            <img src="/garden.jpg" alt="Garden terrace">
+            <div class="overlay"><span class="overlay-icon">&#x26F6;</span></div>
+          </div>
           <div class="gallery-label">Garden terrace</div>
         </div>
         <div>
-          <div class="gallery-item">🍷</div>
+          <div class="gallery-item" data-index="2">
+            <img src="/bar.jpg" alt="Private bar lounge">
+            <div class="overlay"><span class="overlay-icon">&#x26F6;</span></div>
+          </div>
           <div class="gallery-label">Private bar lounge</div>
+        </div>
+      </div>
+
+      <!-- MOBILE: animated main image + circular thumbs + dots -->
+      <div class="mobile-gallery">
+        <div class="mobile-main-img" id="mobileMain">
+          <img src="/dininghall.png" alt="Main dining hall"    class="visible" id="mImg0">
+          <img src="/garden.jpg"     alt="Garden terrace"                      id="mImg1">
+          <img src="/bar.jpg"        alt="Private bar lounge"                  id="mImg2">
+        </div>
+        <div class="mobile-caption" id="mobileCaption">Main dining hall</div>
+        <div class="circle-track">
+          <div class="circle-thumb active" data-idx="0"><img src="/dininghall.png" alt="Main dining hall"></div>
+          <div class="circle-thumb"        data-idx="1"><img src="/garden.jpg"     alt="Garden terrace"></div>
+          <div class="circle-thumb"        data-idx="2"><img src="/bar.jpg"        alt="Private bar lounge"></div>
+        </div>
+        <div class="mobile-dots">
+          <div class="mobile-dot active" data-idx="0"></div>
+          <div class="mobile-dot"        data-idx="1"></div>
+          <div class="mobile-dot"        data-idx="2"></div>
         </div>
       </div>
     </div>
@@ -110,61 +247,143 @@
     <div class="section">
       <h2 class="section-title">At a glance</h2>
       <div class="info-grid">
-        <div class="info-card">
-          <div class="info-card-label">Cuisine</div>
-          <div class="info-card-value">Modern Indian</div>
-        </div>
-        <div class="info-card">
-          <div class="info-card-label">Seating</div>
-          <div class="info-card-value">120 covers</div>
-        </div>
-        <div class="info-card">
-          <div class="info-card-label">Opening hours</div>
-          <div class="info-card-value">12 pm – 11 pm daily</div>
-        </div>
-        <div class="info-card">
-          <div class="info-card-label">Price range</div>
-          <div class="info-card-value">₹800 – ₹2,400 for two</div>
-        </div>
+        <div class="info-card"><div class="info-card-label">Cuisine</div><div class="info-card-value">Modern Indian</div></div>
+        <div class="info-card"><div class="info-card-label">Seating</div><div class="info-card-value">120 covers</div></div>
+        <div class="info-card"><div class="info-card-label">Opening hours</div><div class="info-card-value">12 pm – 11 pm daily</div></div>
+        <div class="info-card"><div class="info-card-label">Price range</div><div class="info-card-value">₹800 – ₹2,400 for two</div></div>
       </div>
     </div>
 
     <div class="section">
       <h2 class="section-title">Find us</h2>
       <div class="contact-card">
-        <div class="contact-row">
-          <div class="contact-icon">📍</div>
-          <span>12, 100 Feet Road, Indiranagar, Bengaluru – 560038</span>
-        </div>
-        <div class="contact-row">
-          <div class="contact-icon">📞</div>
-          <span>+91 80 4112 3344</span>
-        </div>
-        <div class="contact-row">
-          <div class="contact-icon">📧</div>
-          <span>hello@saffronhouse.in</span>
-        </div>
-        <div class="contact-row">
-          <div class="contact-icon">🌐</div>
-          <span>www.saffronhouse.in</span>
-        </div>
+        <div class="contact-row"><div class="contact-icon">📍</div><span>12, 100 Feet Road, Indiranagar, Bengaluru – 560038</span></div>
+        <div class="contact-row"><div class="contact-icon">📞</div><span>+91 80 4112 3344</span></div>
+        <div class="contact-row"><div class="contact-icon">📧</div><span>hello@saffronhouse.in</span></div>
+        <div class="contact-row"><div class="contact-icon">🌐</div><span>www.saffronhouse.in</span></div>
       </div>
     </div>
 
-    <div style="text-align:center; padding-top: 1rem;">
+    <div style="text-align:center;padding-top:1rem;">
       <a href="#" id="viewMenuBtn" class="btn-primary">View our menu</a>
     </div>
+  </div>
 
+  <!-- DESKTOP LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <button class="lb-arrow lb-prev" id="lbPrev">&#8592;</button>
+    <div class="lb-inner">
+      <button class="lb-close" id="lbClose">&times;</button>
+      <div class="lb-img-wrap" id="lbImgWrap"><img id="lbImg" src="" alt=""></div>
+      <div class="lb-caption" id="lbCaption"></div>
+      <div class="lb-dots" id="lbDots"></div>
+    </div>
+    <button class="lb-arrow lb-next" id="lbNext">&#8594;</button>
   </div>
 
   <script>
-    // Extract table ID from URL path (e.g., /about/1 -> 1)
-    const tableId = parseInt(window.location.pathname.split('/about/')[1]) || parseInt(window.location.pathname.split('/about')[0].split('/').pop()) || 1;
-    
-    // Update home button to go to the same table's menu
+    /* ── shared data ── */
+    const images = [
+      { src: '/dininghall.png', label: 'Main dining hall' },
+      { src: '/garden.jpg',     label: 'Garden terrace' },
+      { src: '/bar.jpg',        label: 'Private bar lounge' }
+    ];
+
+    /* ── table routing ── */
+    const tableId = parseInt(window.location.pathname.split('/about/')[1])
+      || parseInt(window.location.pathname.split('/about')[0].split('/').pop()) || 1;
     document.querySelector('.btn-outline').href = '/menu/' + tableId;
-    
-    // Update view menu button to go to the same table's menu
     document.getElementById('viewMenuBtn').href = '/menu/' + tableId;
+
+    /* ═══════════════════════
+       DESKTOP LIGHTBOX
+    ═══════════════════════ */
+    let lbIdx = 0;
+    const lightbox  = document.getElementById('lightbox');
+    const lbImg     = document.getElementById('lbImg');
+    const lbImgWrap = document.getElementById('lbImgWrap');
+    const lbCaption = document.getElementById('lbCaption');
+    const lbDotsEl  = document.getElementById('lbDots');
+
+    images.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'lb-dot' + (i === 0 ? ' active' : '');
+      d.addEventListener('click', () => lbGoTo(i));
+      lbDotsEl.appendChild(d);
+    });
+
+    function lbGoTo(idx) {
+      lbIdx = (idx + images.length) % images.length;
+      lbImg.src = images[lbIdx].src;
+      lbImg.alt = images[lbIdx].label;
+      lbCaption.textContent = images[lbIdx].label;
+      lbDotsEl.querySelectorAll('.lb-dot').forEach((d, i) =>
+        d.classList.toggle('active', i === lbIdx));
+      lbImgWrap.classList.remove('pop');
+      void lbImgWrap.offsetWidth;
+      lbImgWrap.classList.add('pop');
+    }
+
+    function lbOpen(idx) {
+      lbGoTo(idx);
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function lbClose() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.gallery-item').forEach(el =>
+      el.addEventListener('click', () => lbOpen(+el.dataset.index)));
+    document.getElementById('lbClose').addEventListener('click', lbClose);
+    document.getElementById('lbPrev').addEventListener('click', () => lbGoTo(lbIdx - 1));
+    document.getElementById('lbNext').addEventListener('click', () => lbGoTo(lbIdx + 1));
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) lbClose(); });
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape')      lbClose();
+      if (e.key === 'ArrowLeft')   lbGoTo(lbIdx - 1);
+      if (e.key === 'ArrowRight')  lbGoTo(lbIdx + 1);
+    });
+
+    /* ═══════════════════════
+       MOBILE SLIDESHOW
+    ═══════════════════════ */
+    let mIdx = 0;
+    const mImgs    = document.querySelectorAll('#mobileMain img');
+    const mThumbs  = document.querySelectorAll('.circle-thumb');
+    const mDots    = document.querySelectorAll('.mobile-dot');
+    const mCaption = document.getElementById('mobileCaption');
+
+    function mGoTo(idx) {
+      mImgs[mIdx].classList.remove('visible');
+      mThumbs[mIdx].classList.remove('active');
+      mDots[mIdx].classList.remove('active');
+      mIdx = (idx + images.length) % images.length;
+      mImgs[mIdx].classList.add('visible');
+      mThumbs[mIdx].classList.add('active');
+      mDots[mIdx].classList.add('active');
+      mCaption.style.opacity = '0';
+      setTimeout(() => { mCaption.textContent = images[mIdx].label; mCaption.style.opacity = '1'; }, 220);
+    }
+
+    mThumbs.forEach(t => t.addEventListener('click', () => { stopAuto(); mGoTo(+t.dataset.idx); startAuto(); }));
+    mDots.forEach(d   => d.addEventListener('click', () => { stopAuto(); mGoTo(+d.dataset.idx); startAuto(); }));
+
+    let autoTimer;
+    function startAuto() { autoTimer = setInterval(() => mGoTo(mIdx + 1), 3000); }
+    function stopAuto()  { clearInterval(autoTimer); }
+    startAuto();
+
+    /* swipe on mobile */
+    let swipeX = 0;
+    const mWrap = document.getElementById('mobileMain');
+    mWrap.addEventListener('touchstart', e => { swipeX = e.touches[0].clientX; }, { passive: true });
+    mWrap.addEventListener('touchend',   e => {
+      const dx = e.changedTouches[0].clientX - swipeX;
+      if (Math.abs(dx) > 40) { stopAuto(); mGoTo(dx < 0 ? mIdx + 1 : mIdx - 1); startAuto(); }
+    }, { passive: true });
   </script>
 </body>
+</html>
