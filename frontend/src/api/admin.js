@@ -18,12 +18,17 @@ function money(value) {
   return '₹' + (Number.isFinite(amount) ? amount : 0).toFixed(2);
 }
 
+const ICON_ORDERS = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+const ICON_REVENUE = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
+const ICON_ACTIVE = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`;
+const ICON_TABLES = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><path d="M5 7v14"/><path d="M19 7v14"/><path d="M9 21h6"/></svg>`;
+
 async function loadStats() {
   try {
     const s = await api('/admin/stats');
     document.getElementById('statsGrid').innerHTML = `
       <div class="card stat-card">
-        <div class="stat-icon">📦</div>
+        <div class="stat-icon">${ICON_ORDERS}</div>
         <div>
           <div class="stat-meta">Today</div>
           <div class="stat-num">${s.totalOrdersToday}</div>
@@ -31,7 +36,7 @@ async function loadStats() {
         </div>
       </div>
       <div class="card stat-card">
-        <div class="stat-icon">💰</div>
+        <div class="stat-icon">${ICON_REVENUE}</div>
         <div>
           <div class="stat-meta">Today</div>
           <div class="stat-num">${money(s.totalRevenueToday)}</div>
@@ -39,7 +44,7 @@ async function loadStats() {
         </div>
       </div>
       <div class="card stat-card">
-        <div class="stat-icon">📋</div>
+        <div class="stat-icon">${ICON_ACTIVE}</div>
         <div>
           <div class="stat-meta ${s.activeOrders > 0 ? 'active-badge' : ''}">${s.activeOrders > 0 ? s.activeOrders + ' active' : '0 active'}</div>
           <div class="stat-num">${s.activeOrders}</div>
@@ -47,7 +52,7 @@ async function loadStats() {
         </div>
       </div>
       <div class="card stat-card">
-        <div class="stat-icon">🪑</div>
+        <div class="stat-icon">${ICON_TABLES}</div>
         <div>
           <div class="stat-meta">${s.totalTables} total</div>
           <div class="stat-num">${s.tablesOccupied}</div>
@@ -95,110 +100,5 @@ async function loadRecentOrders() {
   } catch {}
 }
 
-async function apiPost(path, body) {
-  const res = await fetch(apiUrl(path), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error();
-  return res.json();
-}
-
-async function apiPatch(path, body) {
-  const res = await fetch(apiUrl(path), {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error();
-  return res.json();
-}
-
-function showToast(msg, error) {
-  const el = document.createElement('div');
-  el.className = 'toast' + (error ? ' error' : '');
-  el.textContent = msg;
-  document.getElementById('toastContainer').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
-
-async function acknowledgeWaiterRequest(id) {
-  try {
-    await apiPatch('/waiter-requests/' + id, { status: 'acknowledged' });
-    loadWaiterRequests();
-    showToast('Request acknowledged.');
-  } catch { showToast('Could not update request.', true); }
-}
-
-async function resolveWaiterRequest(id) {
-  try {
-    await apiPatch('/waiter-requests/' + id, { status: 'resolved' });
-    loadWaiterRequests();
-    showToast('Request resolved.');
-  } catch { showToast('Could not update request.', true); }
-}
-
-async function confirmCashPayment(requestId, orderId) {
-  try {
-    await apiPost('/waiter-requests/' + requestId + '/confirm-cash', {});
-    loadCashPayments();
-    showToast('Cash payment confirmed for Order #' + orderId + '.');
-  } catch { showToast('Could not confirm payment.', true); }
-}
-
-async function loadWaiterRequests() {
-  try {
-    const requests = await api('/waiter-requests?type=assistance');
-    const active = requests.filter(r => r.status === 'pending' || r.status === 'acknowledged');
-    const el = document.getElementById('waiterRequestsList');
-    if (!active.length) {
-      el.innerHTML = '<div class="no-data">No pending requests</div>';
-      return;
-    }
-    el.innerHTML = active.map(r => `
-      <div class="waiter-row">
-        <div class="waiter-row-info">
-          <div class="waiter-row-num">Table ${r.tableNumber}</div>
-          <div class="waiter-row-sub">${timeAgo(r.requestedAt)} · ${r.status === 'acknowledged' ? '✓ Acknowledged' : 'Awaiting response'}</div>
-          ${r.note ? `<div class="waiter-row-sub" style="margin-top:0.25rem">📝 ${r.note}</div>` : ''}
-        </div>
-        <div class="waiter-row-actions">
-          ${r.status === 'pending'
-            ? `<button class="btn btn-outline btn-sm" onclick="acknowledgeWaiterRequest(${r.id})">Acknowledge</button>`
-            : ''}
-          <button class="btn btn-primary btn-sm" onclick="resolveWaiterRequest(${r.id})">Resolve</button>
-        </div>
-      </div>
-    `).join('');
-  } catch {}
-}
-
-async function loadCashPayments() {
-  try {
-    const requests = await api('/waiter-requests?type=cash_collection');
-    const active = requests.filter(r => r.status === 'pending' || r.status === 'acknowledged');
-    const el = document.getElementById('cashPaymentsList');
-    if (!active.length) {
-      el.innerHTML = '<div class="no-data">No pending cash payments</div>';
-      return;
-    }
-    el.innerHTML = active.map(r => `
-      <div class="waiter-row">
-        <div class="waiter-row-info">
-          <div class="waiter-row-num">Table ${r.tableNumber} · Order #${r.orderId || '—'}</div>
-          <div class="waiter-row-sub">${timeAgo(r.requestedAt)} ${r.orderTotal ? '· ' + money(r.orderTotal) : ''}</div>
-        </div>
-        <div class="waiter-row-actions">
-          <button class="btn btn-primary btn-sm" onclick="confirmCashPayment(${r.id}, ${r.orderId})">Confirm Received</button>
-        </div>
-      </div>
-    `).join('');
-  } catch {}
-}
-
 loadStats();
 loadRecentOrders();
-loadWaiterRequests();
-loadCashPayments();
-setInterval(() => { loadWaiterRequests(); loadCashPayments(); }, 10000);
