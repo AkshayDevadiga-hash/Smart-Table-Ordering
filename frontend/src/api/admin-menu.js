@@ -81,7 +81,7 @@ function renderMenu() {
         row.innerHTML = `
           ${item.imageUrl
             ? `<img class="item-thumb" src="${assetUrl(item.imageUrl)}" alt="${item.name}" loading="lazy" />`
-            : `<div class="item-thumb-placeholder">🍽️</div>`}
+            : `<div class="item-thumb-placeholder"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6h3v7"/></svg></div>`}
           <div class="item-row-info">
             <div class="item-row-name">
               <span class="${item.isVeg ? 'veg-dot' : 'nonveg-dot'}"></span>
@@ -92,9 +92,17 @@ function renderMenu() {
           </div>
           <div class="item-price">${money(item.price)}</div>
           <div class="item-actions">
-            <button class="icon-btn" title="${item.isAvailable ? 'Mark unavailable' : 'Mark available'}" onclick="toggleAvail(${item.id})">${item.isAvailable ? '👁️' : '🙈'}</button>
-            <button class="icon-btn" title="Edit" onclick="openEdit(${item.id})">✏️</button>
-            <button class="icon-btn danger" title="Delete" onclick="deleteItem(${item.id}, '${item.name.replace(/'/g, "\\'")}')">🗑️</button>
+            <button class="icon-btn" title="${item.isAvailable ? 'Mark unavailable' : 'Mark available'}" onclick="toggleAvail(${item.id})">
+              ${item.isAvailable
+                ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+                : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`}
+            </button>
+            <button class="icon-btn" title="Edit" onclick="openEdit(${item.id})">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn danger" title="Delete" onclick="deleteItem(${item.id}, '${item.name.replace(/'/g, "\\'")}')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
           </div>
         `;
         sec.appendChild(row);
