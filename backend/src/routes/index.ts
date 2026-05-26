@@ -8,6 +8,7 @@ import kitchenRouter from "./kitchen";
 import adminRouter from "./admin";
 import authRouter from "./auth";
 import reviewsRouter from "./reviews";
+import waiterRequestsRouter from "./waiterRequests";
 
 const router: Router = Router();
 
@@ -20,5 +21,6 @@ router.use(ordersRouter);
 router.use(kitchenRouter);
 router.use(adminRouter);
 router.use(reviewsRouter);
+router.use(waiterRequestsRouter);
 
 export default router;

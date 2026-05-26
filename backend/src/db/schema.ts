@@ -5,6 +5,8 @@ import { z } from "zod/v4";
 export const tableStatusEnum = pgEnum("table_status", ["available", "occupied", "reserved"]);
 export const orderStatusEnum = pgEnum("order_status", ["pending", "received", "preparing", "ready", "delivered", "completed", "cancelled"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid"]);
+export const waiterRequestTypeEnum = pgEnum("waiter_request_type", ["assistance", "cash_collection"]);
+export const waiterRequestStatusEnum = pgEnum("waiter_request_status", ["pending", "acknowledged", "resolved"]);
 
 export const menuCategoriesTable = pgTable("menu_categories", {
   id: serial("id").primaryKey(),
@@ -42,6 +44,7 @@ export const ordersTable = pgTable("orders", {
   sessionId: text("session_id"),
   status: orderStatusEnum("status").notNull().default("pending"),
   paymentStatus: paymentStatusEnum("payment_status").notNull().default("pending"),
+  paymentMethod: text("payment_method"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0"),
   tax: decimal("tax", { precision: 10, scale: 2 }).notNull().default("0"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
@@ -68,7 +71,20 @@ export const reviewsTable = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const waiterRequestsTable = pgTable("waiter_requests", {
+  id: serial("id").primaryKey(),
+  tableId: integer("table_id").notNull().references(() => tablesTable.id),
+  orderId: integer("order_id").references(() => ordersTable.id),
+  type: waiterRequestTypeEnum("type").notNull().default("assistance"),
+  status: waiterRequestStatusEnum("status").notNull().default("pending"),
+  note: text("note"),
+  requestedAt: timestamp("requested_at").defaultNow().notNull(),
+  acknowledgedAt: timestamp("acknowledged_at"),
+  resolvedAt: timestamp("resolved_at"),
+});
+
 export type Review = typeof reviewsTable.$inferSelect;
+export type WaiterRequest = typeof waiterRequestsTable.$inferSelect;
 
 export const insertMenuCategorySchema = createInsertSchema(menuCategoriesTable).omit({ id: true, createdAt: true });
 export const insertMenuItemSchema = createInsertSchema(menuItemsTable).omit({ id: true, createdAt: true });

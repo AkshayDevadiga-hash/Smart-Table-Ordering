@@ -81,6 +81,11 @@
 
     .no-results { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 
+    .call-waiter-area { max-width: 780px; margin: 0.75rem auto 0; padding: 0 1rem; }
+    .call-waiter-btn { width: 100%; padding: 0.75rem; border: 1.5px solid var(--primary); border-radius: 12px; background: var(--primary-light); color: var(--primary); font-size: 0.9375rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .call-waiter-btn:hover:not(:disabled) { background: var(--primary); color: #fff; }
+    .call-waiter-btn.sent { border-color: var(--border); background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
+
     .hidden { display: none !important; }
     .sticky-cart { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 100; animation: slideUp 0.2s ease; }
     @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
@@ -123,6 +128,7 @@
 
   <div class="current-bill" id="currentBill"></div>
   <div class="order-history" id="orderHistory"></div>
+  <div class="call-waiter-area" id="callWaiterArea"></div>
 
   <div class="menu-content" id="menuContent">
     <div id="skeletons">

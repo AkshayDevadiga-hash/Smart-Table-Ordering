@@ -12,9 +12,14 @@ const STATUS_MESSAGES = {
 
 let order = null;
 let interval = null;
-
 let selectedRating = 0;
 let reviewDraft = '';
+let paymentTableId = null;
+
+function cashPendingKey() { return 'cash-pending-' + orderId; }
+function hasCashPending() { return !!localStorage.getItem(cashPendingKey()); }
+function setCashPending() { localStorage.setItem(cashPendingKey(), '1'); }
+function clearCashPending() { localStorage.removeItem(cashPendingKey()); }
 
 function money(value) {
   const amount = Number(value);
@@ -92,10 +97,7 @@ async function submitReview() {
   btn.disabled = true;
   btn.textContent = 'Submitting…';
   try {
-    await api('/reviews', {
-      method: 'POST',
-      body: JSON.stringify({ orderId, rating: selectedRating, comment }),
-    });
+    await api('/reviews', { method: 'POST', body: JSON.stringify({ orderId, rating: selectedRating, comment }) });
     markReviewSubmitted();
     selectedRating = 0;
     reviewDraft = '';
@@ -118,7 +120,7 @@ function renderContent(o) {
     tableLink.innerHTML = `<a href="/menu/${o.tableId}" class="btn btn-outline btn-sm">Back to Menu</a>`;
   }
 
-  let stepsHtml = STATUS_STEPS.map((s, i) => {
+  const stepsHtml = STATUS_STEPS.map((s, i) => {
     const done = i < stepIdx;
     const active = i === stepIdx && o.status !== 'cancelled';
     return `<div class="step-node ${done?'done':''} ${active?'active':''}">
@@ -127,7 +129,7 @@ function renderContent(o) {
     </div>`;
   }).join('');
 
-  let itemsHtml = (o.items || []).map(item =>
+  const itemsHtml = (o.items || []).map(item =>
     `<div class="order-line"><span>${item.quantity}× ${item.menuItemName}</span><span>${money(safeNumber(item.unitPrice) * safeNumber(item.quantity))}</span></div>`
   ).join('');
 
@@ -142,16 +144,30 @@ function renderContent(o) {
   if (o.status === 'cancelled') {
     paymentSection = '';
   } else if (paymentStatus === 'paid') {
+    clearCashPending();
+    const methodLabel = o.paymentMethod === 'cash' ? ' (Cash)' : ' (Online)';
     paymentSection = `
       <div class="payment-success">
         <div class="payment-success-icon">✅</div>
         <div>
-          <div class="payment-success-title">Payment Successful</div>
+          <div class="payment-success-title">Payment Successful${methodLabel}</div>
           <div class="payment-success-sub">Total paid: ${money(total)}</div>
         </div>
       </div>`;
+  } else if (hasCashPending()) {
+    paymentSection = `
+      <div class="payment-waiting">
+        <div class="payment-waiting-icon">🛎️</div>
+        <div>
+          <div class="payment-waiting-title">Awaiting cash collection</div>
+          <div class="payment-waiting-sub">A waiter will come to collect ${money(total)} from your table shortly.</div>
+        </div>
+      </div>`;
   } else {
-    paymentSection = `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="payOrder()">Pay ${money(total)}</button>`;
+    paymentSection = `
+      <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="openPaymentModal(${total}, ${o.tableId})">
+        Pay ${money(total)}
+      </button>`;
   }
 
   document.getElementById('content').innerHTML = `
@@ -188,22 +204,108 @@ function renderContent(o) {
 
     ${showReview ? renderReviewForm() : ''}
 
-    ${o.status !== 'delivered' && o.status !== 'cancelled'
+    ${(o.status !== 'delivered' && o.status !== 'cancelled') || hasCashPending()
       ? '<div class="refresh-hint">🔄 Auto-refreshing every 5 seconds…</div>'
       : ''}
   `;
 }
 
-async function payOrder() {
+function openPaymentModal(total, tableId) {
+  paymentTableId = tableId;
+  document.getElementById('payModalTotal').textContent = money(total);
+  document.getElementById('paymentModal').classList.remove('hidden');
+  switchPayTab('upi');
+}
+
+function closePaymentModal() {
+  document.getElementById('paymentModal').classList.add('hidden');
+  resetPaymentForm();
+}
+
+function switchPayTab(tab) {
+  ['upi','card','cash'].forEach(t => {
+    document.getElementById('payTab-' + t).classList.toggle('pay-tab-active', t === tab);
+    document.getElementById('payContent-' + t).classList.toggle('hidden', t !== tab);
+  });
+}
+
+function resetPaymentForm() {
+  const upiId = document.getElementById('upiId');
+  const cardNum = document.getElementById('cardNumber');
+  const cardExp = document.getElementById('cardExpiry');
+  const cardCvv = document.getElementById('cardCvv');
+  const cardName = document.getElementById('cardName');
+  if (upiId) upiId.value = '';
+  if (cardNum) cardNum.value = '';
+  if (cardExp) cardExp.value = '';
+  if (cardCvv) cardCvv.value = '';
+  if (cardName) cardName.value = '';
+}
+
+function formatCardNumber(input) {
+  let val = input.value.replace(/\D/g, '').slice(0, 16);
+  input.value = val.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatExpiry(input) {
+  let val = input.value.replace(/\D/g, '').slice(0, 4);
+  if (val.length >= 3) val = val.slice(0, 2) + '/' + val.slice(2);
+  input.value = val;
+}
+
+async function simulatePay(method) {
+  if (method === 'cash') {
+    closePaymentModal();
+    await requestCashPayment(paymentTableId);
+    return;
+  }
+  if (method === 'upi') {
+    const upiVal = document.getElementById('upiId').value.trim();
+    if (!upiVal || !upiVal.includes('@') || upiVal.length < 5) {
+      showToast('Enter a valid UPI ID (e.g. name@upi)', true);
+      return;
+    }
+  }
+  if (method === 'card') {
+    const num = document.getElementById('cardNumber').value.replace(/\s/g,'');
+    const exp = document.getElementById('cardExpiry').value;
+    const cvv = document.getElementById('cardCvv').value;
+    const name = document.getElementById('cardName').value.trim();
+    if (num.length < 16) { showToast('Enter a valid 16-digit card number', true); return; }
+    if (!/^\d{2}\/\d{2}$/.test(exp)) { showToast('Enter expiry as MM/YY', true); return; }
+    if (cvv.length < 3) { showToast('Enter a valid 3-digit CVV', true); return; }
+    if (!name) { showToast('Enter cardholder name', true); return; }
+  }
+
+  closePaymentModal();
+  document.getElementById('payProcessingModal').classList.remove('hidden');
+  await new Promise(r => setTimeout(r, 2000));
+  document.getElementById('payProcessingModal').classList.add('hidden');
+
   try {
     order = await api('/orders/' + orderId + '/payment', {
       method: 'PATCH',
-      body: JSON.stringify({ paymentStatus: 'paid' }),
+      body: JSON.stringify({ paymentStatus: 'paid', paymentMethod: 'online' }),
     });
     renderContent(order);
-    showToast('Payment completed! Thank you.');
+    clearInterval(interval);
+    showToast('Payment successful! Thank you.');
   } catch {
     showToast('Payment failed. Please try again.', true);
+  }
+}
+
+async function requestCashPayment(tableId) {
+  try {
+    await api('/waiter-requests', {
+      method: 'POST',
+      body: JSON.stringify({ tableId, orderId, type: 'cash_collection' }),
+    });
+    setCashPending();
+    renderContent(order);
+    showToast('Waiter notified — they will collect payment shortly.');
+  } catch {
+    showToast('Could not send request. Please try again.', true);
   }
 }
 
@@ -247,9 +349,10 @@ async function loadOrder() {
     const o = await api('/orders/' + orderId);
     order = o;
     renderContent(o);
-    if (o.status === 'delivered' || o.status === 'cancelled') {
-      clearInterval(interval);
-    }
+    const paymentStatus = o.paymentStatus || 'pending';
+    const isDone = (o.status === 'delivered' && paymentStatus === 'paid' && !hasCashPending())
+      || o.status === 'cancelled';
+    if (isDone) clearInterval(interval);
   } catch {
     document.getElementById('content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><p>This order may not exist.</p><a href="/" class="btn btn-primary">Go Home</a></div>';
     clearInterval(interval);

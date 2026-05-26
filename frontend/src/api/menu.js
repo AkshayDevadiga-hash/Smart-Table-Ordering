@@ -327,4 +327,44 @@ async function placeOrder() {
   }
 }
 
+const WAITER_COOLDOWN_MS = 60000;
+const WAITER_KEY = 'waiter-requested-' + tableId;
+
+function getWaiterCooldownLeft() {
+  const ts = parseInt(localStorage.getItem(WAITER_KEY) || '0');
+  if (!ts) return 0;
+  const left = WAITER_COOLDOWN_MS - (Date.now() - ts);
+  return left > 0 ? left : 0;
+}
+
+function renderCallWaiterBtn() {
+  const el = document.getElementById('callWaiterArea');
+  if (!el) return;
+  const left = getWaiterCooldownLeft();
+  if (left > 0) {
+    const secs = Math.ceil(left / 1000);
+    el.innerHTML = `<button class="call-waiter-btn sent" disabled>✓ Request Sent (${secs}s)</button>`;
+    setTimeout(renderCallWaiterBtn, 1000);
+  } else {
+    el.innerHTML = `<button class="call-waiter-btn" onclick="callWaiter()">🔔 Call Waiter</button>`;
+  }
+}
+
+async function callWaiter() {
+  const left = getWaiterCooldownLeft();
+  if (left > 0) return;
+  try {
+    await api('/waiter-requests', {
+      method: 'POST',
+      body: JSON.stringify({ tableId, type: 'assistance' }),
+    });
+    localStorage.setItem(WAITER_KEY, Date.now().toString());
+    renderCallWaiterBtn();
+    showToast('Waiter has been called!');
+  } catch {
+    showToast('Could not call waiter. Please try again.', true);
+  }
+}
+
 load();
+renderCallWaiterBtn();

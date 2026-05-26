@@ -64,7 +64,8 @@ export async function updatePaymentStatus(req: Request, res: Response): Promise<
   const params = UpdateOrderStatusParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   if (req.body?.paymentStatus !== "paid") { res.status(400).json({ error: "paymentStatus must be paid" }); return; }
-  const order = await orderService.markOrderPaid(params.data.orderId);
+  const method = req.body?.paymentMethod === "cash" ? "cash" : "online";
+  const order = await orderService.markOrderPaid(params.data.orderId, method);
   if (!order) { res.status(404).json({ error: "Order not found" }); return; }
   res.json(order);
 }

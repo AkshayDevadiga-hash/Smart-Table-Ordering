@@ -95,5 +95,110 @@ async function loadRecentOrders() {
   } catch {}
 }
 
+async function apiPost(path, body) {
+  const res = await fetch(apiUrl(path), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error();
+  return res.json();
+}
+
+async function apiPatch(path, body) {
+  const res = await fetch(apiUrl(path), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error();
+  return res.json();
+}
+
+function showToast(msg, error) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (error ? ' error' : '');
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+async function acknowledgeWaiterRequest(id) {
+  try {
+    await apiPatch('/waiter-requests/' + id, { status: 'acknowledged' });
+    loadWaiterRequests();
+    showToast('Request acknowledged.');
+  } catch { showToast('Could not update request.', true); }
+}
+
+async function resolveWaiterRequest(id) {
+  try {
+    await apiPatch('/waiter-requests/' + id, { status: 'resolved' });
+    loadWaiterRequests();
+    showToast('Request resolved.');
+  } catch { showToast('Could not update request.', true); }
+}
+
+async function confirmCashPayment(requestId, orderId) {
+  try {
+    await apiPost('/waiter-requests/' + requestId + '/confirm-cash', {});
+    loadCashPayments();
+    showToast('Cash payment confirmed for Order #' + orderId + '.');
+  } catch { showToast('Could not confirm payment.', true); }
+}
+
+async function loadWaiterRequests() {
+  try {
+    const requests = await api('/waiter-requests?type=assistance');
+    const active = requests.filter(r => r.status === 'pending' || r.status === 'acknowledged');
+    const el = document.getElementById('waiterRequestsList');
+    if (!active.length) {
+      el.innerHTML = '<div class="no-data">No pending requests</div>';
+      return;
+    }
+    el.innerHTML = active.map(r => `
+      <div class="waiter-row">
+        <div class="waiter-row-info">
+          <div class="waiter-row-num">Table ${r.tableNumber}</div>
+          <div class="waiter-row-sub">${timeAgo(r.requestedAt)} · ${r.status === 'acknowledged' ? '✓ Acknowledged' : 'Awaiting response'}</div>
+          ${r.note ? `<div class="waiter-row-sub" style="margin-top:0.25rem">📝 ${r.note}</div>` : ''}
+        </div>
+        <div class="waiter-row-actions">
+          ${r.status === 'pending'
+            ? `<button class="btn btn-outline btn-sm" onclick="acknowledgeWaiterRequest(${r.id})">Acknowledge</button>`
+            : ''}
+          <button class="btn btn-primary btn-sm" onclick="resolveWaiterRequest(${r.id})">Resolve</button>
+        </div>
+      </div>
+    `).join('');
+  } catch {}
+}
+
+async function loadCashPayments() {
+  try {
+    const requests = await api('/waiter-requests?type=cash_collection');
+    const active = requests.filter(r => r.status === 'pending' || r.status === 'acknowledged');
+    const el = document.getElementById('cashPaymentsList');
+    if (!active.length) {
+      el.innerHTML = '<div class="no-data">No pending cash payments</div>';
+      return;
+    }
+    el.innerHTML = active.map(r => `
+      <div class="waiter-row">
+        <div class="waiter-row-info">
+          <div class="waiter-row-num">Table ${r.tableNumber} · Order #${r.orderId || '—'}</div>
+          <div class="waiter-row-sub">${timeAgo(r.requestedAt)} ${r.orderTotal ? '· ' + money(r.orderTotal) : ''}</div>
+        </div>
+        <div class="waiter-row-actions">
+          <button class="btn btn-primary btn-sm" onclick="confirmCashPayment(${r.id}, ${r.orderId})">Confirm Received</button>
+        </div>
+      </div>
+    `).join('');
+  } catch {}
+}
+
 loadStats();
 loadRecentOrders();
+loadWaiterRequests();
+loadCashPayments();
+setInterval(() => { loadWaiterRequests(); loadCashPayments(); }, 10000);

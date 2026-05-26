@@ -173,10 +173,10 @@ export async function updateOrderStatus(orderId: number, status: string): Promis
   return getOrderWithItems(order.id);
 }
 
-export async function markOrderPaid(orderId: number) {
+export async function markOrderPaid(orderId: number, paymentMethod?: "online" | "cash") {
   const [order] = await db
     .update(ordersTable)
-    .set({ paymentStatus: "paid", updatedAt: new Date() })
+    .set({ paymentStatus: "paid", paymentMethod: paymentMethod ?? "online", updatedAt: new Date() })
     .where(eq(ordersTable.id, orderId))
     .returning();
   if (!order) return null;
