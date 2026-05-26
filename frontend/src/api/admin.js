@@ -29,7 +29,7 @@ async function loadStats() {
     document.getElementById('statsGrid').innerHTML = `
       <div class="card stat-card">
         <div class="stat-icon">${ICON_ORDERS}</div>
-        <div>
+        <div class="stat-body">
           <div class="stat-meta">Today</div>
           <div class="stat-num">${s.totalOrdersToday}</div>
           <div class="stat-label">Orders Today</div>
@@ -37,7 +37,7 @@ async function loadStats() {
       </div>
       <div class="card stat-card">
         <div class="stat-icon">${ICON_REVENUE}</div>
-        <div>
+        <div class="stat-body">
           <div class="stat-meta">Today</div>
           <div class="stat-num">${money(s.totalRevenueToday)}</div>
           <div class="stat-label">Paid Revenue Today</div>
@@ -45,7 +45,7 @@ async function loadStats() {
       </div>
       <div class="card stat-card">
         <div class="stat-icon">${ICON_ACTIVE}</div>
-        <div>
+        <div class="stat-body">
           <div class="stat-meta ${s.activeOrders > 0 ? 'active-badge' : ''}">${s.activeOrders > 0 ? s.activeOrders + ' active' : '0 active'}</div>
           <div class="stat-num">${s.activeOrders}</div>
           <div class="stat-label">Active Orders</div>
@@ -53,7 +53,7 @@ async function loadStats() {
       </div>
       <div class="card stat-card">
         <div class="stat-icon">${ICON_TABLES}</div>
-        <div>
+        <div class="stat-body">
           <div class="stat-meta">${s.totalTables} total</div>
           <div class="stat-num">${s.tablesOccupied}</div>
           <div class="stat-label">Tables Occupied</div>

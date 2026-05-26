@@ -16,8 +16,11 @@ function showToast(msg, error) {
   setTimeout(() => el.remove(), 3500);
 }
 
+function starSvg(filled) {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="color:${filled ? '#f59e0b' : '#d1d5db'}"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+}
 function stars(rating) {
-  return '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+  return Array.from({ length: 5 }, (_, i) => starSvg(i < rating)).join('');
 }
 
 function formatDate(str) {
@@ -65,14 +68,14 @@ async function loadReviews() {
       const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
       statsEl.innerHTML = `
         <span class="stat-pill">${reviews.length} review${reviews.length !== 1 ? 's' : ''}</span>
-        <span class="stat-pill">⭐ ${avg} avg rating</span>
+        <span class="stat-pill" style="display:inline-flex;align-items:center;gap:0.25rem">${starSvg(true)} ${avg} avg rating</span>
       `;
     } else {
       statsEl.innerHTML = '';
     }
 
     if (!reviews.length) {
-      listEl.innerHTML = '<div class="no-reviews"><div style="font-size:2.5rem;margin-bottom:0.75rem">⭐</div><p>No reviews found for the selected filters.</p></div>';
+      listEl.innerHTML = '<div class="no-reviews"><div style="margin-bottom:0.75rem;display:flex;justify-content:center;gap:2px">' + Array.from({length:5},()=>starSvg(false)).join('') + '</div><p>No reviews found for the selected filters.</p></div>';
       return;
     }
 

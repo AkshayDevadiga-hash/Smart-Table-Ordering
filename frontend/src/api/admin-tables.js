@@ -63,13 +63,19 @@ function renderTables() {
         <div class="table-card-top">
           <div>
             <div class="table-num">Table ${t.tableNumber}</div>
-            <div class="table-seats">🪑 ${t.capacity} seats</div>
+            <div class="table-seats">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="5" width="18" height="10" rx="1"/><path d="M5 19v-4"/><path d="M19 19v-4"/><path d="M8 19h8"/></svg>
+              ${t.capacity} seats
+            </div>
           </div>
           ${statusBadge(t.status)}
         </div>
         <div class="qr-wrap">
           <img src="${qrSrc}" alt="QR Code for Table ${t.tableNumber}" />
-          <a class="qr-dl" href="${qrSrc}" download="table-${t.tableNumber}-qr.png">⬇ Download PNG</a>
+          <a class="qr-dl" href="${qrSrc}" download="table-${t.tableNumber}-qr.png">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PNG
+          </a>
         </div>
         <button class="table-preview" onclick="window.open('/menu/${t.id}','_blank')">Preview Menu →</button>
       </div>
