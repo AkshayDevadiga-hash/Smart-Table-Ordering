@@ -11,3 +11,9 @@ id = "bmIanwkEUZ3fwrnYf5J2a"
 uri = "file://Smart-Restaurant-Technical-Guide.md"
 type = "text"
 title = "Smart Restaurant — Technical Guide"
+
+[[outputs]]
+id = "bP9v0rTsOqiggwgdiDKoL"
+uri = "file://Saffron_House_Presentation.md"
+type = "text"
+title = "Saffron House — Presentation Guide"
